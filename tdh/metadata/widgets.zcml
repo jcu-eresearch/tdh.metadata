@@ -1,0 +1,24 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:z3c="http://namespaces.zope.org/z3c"
+    xmlns:zcml="http://namespaces.zope.org/zcml">
+
+    <!-- Include configuration for dependencies listed in setup.py -->
+    <includeDependencies package="." />
+
+    <z3c:widgetTemplate
+        mode="input"
+        widget=".widgets.ForCodeDataGridField"
+        layer="plone.app.z3cform.interfaces.IPloneFormLayer"
+        template="widget_templates/anzsrc_code_datagridfield_input.pt"
+        />
+
+    <z3c:widgetTemplate
+        mode="input"
+        widget=".widgets.SeoCodeDataGridField"
+        layer="plone.app.z3cform.interfaces.IPloneFormLayer"
+        template="widget_templates/anzsrc_code_datagridfield_input.pt"
+        />
+
+</configure>

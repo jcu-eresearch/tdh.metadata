@@ -1,0 +1,48 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:grok="http://namespaces.zope.org/grok"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="tdh.metadata">
+
+  <!-- Include configuration for dependencies listed in setup.py -->
+  <includeDependencies package="." />
+
+  <!-- Grok the package to initialise schema interfaces and content classes -->
+  <grok:grok package="." />
+
+  <i18n:registerTranslations directory="locales" />
+
+  <!-- Register an extension profile to make the product installable
+       in Plone -->
+  <genericsetup:registerProfile
+      name="default"
+      title="Tropical Data Hub Metadata Infrastructure"
+      directory="profiles/default"
+      description="Extension profile for Tropical Data Hub Metadata Infrastructure"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+  <genericsetup:upgradeStep
+      source="*"
+      destination="7"
+      title="Reinstall tdh.metadata"
+      description="Reinstall tdh.metadata"
+      handler="tdh.metadata.setuphandlers.upgrade_by_reinstall"
+      profile="tdh.metadata:default"
+      />
+
+
+    <!-- -*- extra stuff goes here -*- -->
+
+  <subscriber
+      for=".data_record_repository.IDataRecordRepository
+           zope.lifecycleevent.interfaces.IObjectAddedEvent"
+      handler=".utils.disable_context_portlets_added_handler"
+      />
+
+  <include file="widgets.zcml" />
+
+</configure>
