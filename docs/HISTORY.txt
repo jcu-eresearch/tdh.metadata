@@ -4,4 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Customising widget for keywords -- this may be refactored out into another
+  package and released on pypi.
+  [David]
+- Created basic types for dataset record and metadata repository
+  [David]
 - Initial release
