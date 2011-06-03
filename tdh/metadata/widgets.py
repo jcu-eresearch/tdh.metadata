@@ -50,7 +50,6 @@ class StandardButtonAction(action.Action, ButtonWidget, zope.location.Location):
 def standardButtonActionFactory(request, field):
     """Factory for producing standard button actions"""
     button = StandardButtonAction(request, field)
-    import ipdb; ipdb.set_trace()
     return button
 
 
