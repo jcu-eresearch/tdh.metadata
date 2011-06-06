@@ -359,21 +359,24 @@ class IDatasetRecord(form.Schema):
     )
 
     licensing = schema.Choice(
-      title=_(u"Licensing"),
-      description=_(u"Select what licence your data has. If you select \
-                    Restricted Licence, and wish your data record to be \
-                    curated, a staff member will contact you."),
-      values = [
-          "Creative Commons - Attribution alone (by)",
-          "Creative Commons - Attribution + Noncommercial (by-nc)",
-          "Creative Commons - Attribution + NoDerivatives (by-nd)",
-          "Creative Commons - Attribution + ShareAlike (by-sa)",
-          "Creative Commons - Attribution + Noncommercial + NoDerivatives \
-          (by-nc-nd)",
-          "Creative Commons - Attribution + Noncommercial + ShareAlike \
-          (by-nc-sa)",
-          "Restricted Licence",
-      ],
+        title=_(u"Licensing"),
+        description=_(u"Select what licence your data has. If you select \
+                      Restricted Licence, and wish your data record to be \
+                      curated, a staff member will contact you."),
+        required=True,
+        default=_(u"No Licence"),
+        values = [
+            "No Licence",
+            "Creative Commons - Attribution alone (by)",
+            "Creative Commons - Attribution + Noncommercial (by-nc)",
+            "Creative Commons - Attribution + NoDerivatives (by-nd)",
+            "Creative Commons - Attribution + ShareAlike (by-sa)",
+            "Creative Commons - Attribution + Noncommercial + NoDerivatives \
+            (by-nc-nd)",
+            "Creative Commons - Attribution + Noncommercial + ShareAlike \
+            (by-nc-sa)",
+            "Restricted Licence",
+        ],
     )
 
     nationally_significant = schema.Bool(
