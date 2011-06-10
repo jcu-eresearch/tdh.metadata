@@ -1,8 +1,6 @@
-from five import grok
 from sqlalchemy.orm import mapper
 from sqlalchemy import Table
 
-from zope.schema.interfaces import IVocabularyFactory
 from zope.schema.vocabulary import SimpleTerm
 from z3c.sqlalchemy import getSAWrapper
 from z3c.sqlalchemy.mapper import MappedClassBase
@@ -39,5 +37,6 @@ def ActivitiesQuerySourceFactory():
                                  table_name_absolute=TABLE_ABSOLUTE_NAME,
                                  value_field='app_id',
                                  token_field='app_id',
-                                 title_field='short_title'
+                                 title_field='short_title',
+                                 query_limit=5,
                                 )

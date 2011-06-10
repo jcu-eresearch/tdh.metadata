@@ -1,6 +1,7 @@
 from time import time
 
 from zope.interface import implements
+from zope.schema.vocabulary import SimpleTerm
 from z3c.sqlalchemy import getSAWrapper
 from z3c.formwidget.query.interfaces import IQuerySource
 
@@ -14,7 +15,8 @@ class BaseQuerySource(object):
     implements(IQuerySource)
 
     def __init__(self, db_connector=None, table_name_absolute=None, \
-                value_field='value', token_field='token', title_field='title'):
+                value_field='value', token_field='token', title_field='title', \
+                query_limit=5):
         super(BaseQuerySource, self).__init__()
 
         self.db_connector = db_connector
@@ -22,6 +24,7 @@ class BaseQuerySource(object):
         self.value_field = value_field
         self.token_field = token_field
         self.title_field = title_field
+        self.query_limit = query_limit
 
         self.sa_wrapper = getSAWrapper(self.db_connector)
         self.mapper_class = \
@@ -41,12 +44,12 @@ class BaseQuerySource(object):
         """Return a SimpleTerm using the given value as the token. This may
         be implemented differently if the value is not equal to the token.
         Implemented from IBaseVocabulary"""
-        return self.search(value, field=self.value_field, exact=True)
+        return self.search(value, field=self.value_field, exact=True).next()
 
     @ram.cache(lambda m, self, value: time() // 60) # cache for a minute
     def getTermByToken(self, value):
         """Implemented from IVocabularyTokenized"""
-        return self.search(value, field=self.token_field, exact=True)
+        return self.search(value, field=self.token_field, exact=True).next()
 
     def search(self, query_string, field=None, exact=False):
         """Implement interface for IQuerySource"""
@@ -58,7 +61,7 @@ class BaseQuerySource(object):
         query = exact and query.filter(search_attribute == query_string) or \
                 query.filter(search_attribute.like('%%%s%%' % query_string))
 
-        for result in query[:5]:
+        for result in query[:self.query_limit]:
             yield self.formatResult(result)
 
     def formatResult(self, result):
