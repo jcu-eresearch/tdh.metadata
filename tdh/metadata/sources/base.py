@@ -33,7 +33,8 @@ class BaseQuerySource(object):
         return self.sa_wrapper.session.query(self.mapper_class)
 
     def __contains__(self, value):
-        """Allow form validators to check if a value is part of our source"""
+        """Allow form validators to check if a value is part of our source.
+        Implemented from ISource"""
         return self.getTerm(value) and True or False
 
     def getTerm(self, value):
@@ -53,7 +54,7 @@ class BaseQuerySource(object):
             field = self.title_field
         search_attribute = getattr(self.mapper_class, field)
 
-        query = self.query
+        query = self._query
         query = exact and query.filter(search_attribute == query_string) or \
                 query.filter(search_attribute.like('%%%s%%' % query_string))
 

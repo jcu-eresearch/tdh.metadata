@@ -35,6 +35,7 @@ setup(name='tdh.metadata',
           'collective.geo.bundle',
           'collective.z3cform.mapwidget',
           'collective.z3cform.datagridfield',
+          'Products.SQLAlchemyDA',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

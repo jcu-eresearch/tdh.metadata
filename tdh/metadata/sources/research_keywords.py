@@ -7,7 +7,7 @@ from zope.schema.vocabulary import SimpleTerm, SimpleVocabulary
 
 from z3c.formwidget.query.interfaces import IQuerySource
 
-class KeywordSource(object):
+class ResearchKeywordSource(object):
     implements(IQuerySource)
 
     values = [('fish', 'Fish'),
@@ -55,11 +55,11 @@ class KeywordSource(object):
 
 
 
-class KeywordSourceBinder(grok.GlobalUtility):
+class ResearchKeywordSourceBinder(grok.GlobalUtility):
     grok.implements(IContextSourceBinder)
     grok.provides(IVocabularyFactory)
-    grok.name("tdh.metadata.keywords")
+    grok.name("tdh.metadata.sources.research_keywords")
 
     def __call__(self, context):
-        return KeywordSource(context)
+        return ResearchKeywordSource(context)
 
