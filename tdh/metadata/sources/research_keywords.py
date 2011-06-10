@@ -1,65 +1,40 @@
-from five import grok
 
-from zope import component
-from zope.interface import implements
-from zope.schema.interfaces import IContextSourceBinder, IVocabularyFactory
-from zope.schema.vocabulary import SimpleTerm, SimpleVocabulary
+from zope.schema.vocabulary import SimpleTerm
+from z3c.sqlalchemy.mapper import MappedClassBase
 
-from z3c.formwidget.query.interfaces import IQuerySource
-
-class ResearchKeywordSource(object):
-    implements(IQuerySource)
-
-    values = [('fish', 'Fish'),
-              ('cows', 'Cows'),
-              ('bananas', 'Bananas'),
-              ('chickens', 'Chickens')]
-
-    def __init__(self, context=None):
-        self.context = context or component.getSiteManager()
-
-    # IIterableVocabulary
-    def __iter__(self):
-        return self.vocabulary.__iter__()
-
-    # IIterableVocabulary
-    def __len__(self):
-        return self.vocabulary.__len__()
+from tdh.metadata import config, utils
+from tdh.metadata.sources.base import BaseQuerySource
 
 
+TABLE_NAME = 'LU_KEYWORDS'
+TABLE_NAME_ABSOLUTE = '%s.%s' % (config.DB_SCHEMA, TABLE_NAME)
 
-    #IBaseVocabulary
-    def getTerm(self, value):
-        return self.vocabulary.getTerm(value)
+class ResearchKeyword(MappedClassBase):
+    pass
 
-    #IVocabularyTokenized
-    def getTermByToken(self, value):
-        return self.vocabulary.getTermByToken(value)
-
-    #IQuerySource
-    def search(self, query_string):
-        """Implement interface for IQuerySource"""
-        for term in self.vocabulary:
-            if query_string.lower() in term.title.lower():
-                yield term
-
-    @property
-    def vocabulary(self):
-        terms = []
-
-        for value in self.values:
-            terms.append(SimpleTerm(value[0], value[0], value[1]))
-
-        return SimpleVocabulary(terms)
+utils.createAndRegisterSAMapper(db_connector=config.DB_CONNECTOR,
+                                table_name=TABLE_NAME,
+                                db_schema=config.DB_SCHEMA,
+                                table_name_absolute=TABLE_NAME_ABSOLUTE,
+                                mapper_class=ResearchKeyword,
+                                primary_keys=['keycode'],
+                               )
 
 
+class ResearchKeywordQuerySource(BaseQuerySource):
+
+    def formatResult(self, result):
+        value = token = str(getattr(result, self.value_field))
+        title = "%(keycode)s - %(keyword)s" % result.__dict__
+        return SimpleTerm(value, token, title)
 
 
-class ResearchKeywordSourceBinder(grok.GlobalUtility):
-    grok.implements(IContextSourceBinder)
-    grok.provides(IVocabularyFactory)
-    grok.name("tdh.metadata.sources.research_keywords")
-
-    def __call__(self, context):
-        return ResearchKeywordSource(context)
-
+def ResearchKeywordQuerySourceFactory():
+    return ResearchKeywordQuerySource(db_connector=config.DB_CONNECTOR,
+                                      table_name_absolute=TABLE_NAME_ABSOLUTE,
+                                      value_field='keycode',
+                                      token_field='keycode',
+                                      title_field='keyword',
+                                      query_fields=['keycode', 'keyword'],
+                                      query_limit=5,
+                                     )

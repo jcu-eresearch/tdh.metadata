@@ -4,6 +4,12 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Made the keywords source work off the newly provided Oracle database table.
+  Keyword searches work against both fields in the table.
+  [David]
+- BaseQuerySource searchs can now work with multiple PKs, multiple search terms,
+  can work with exact or inexact searches, and are currently case insensitive
+  [David]
 - Refactored the keywords vocabulary into something with a more relevant name.
   This module and class still needs adjustment to work off a database.
   [David]

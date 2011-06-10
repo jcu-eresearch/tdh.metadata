@@ -1,5 +1,7 @@
 from time import time
 
+from sqlalchemy import or_, func
+
 from zope.interface import implements
 from zope.schema.vocabulary import SimpleTerm
 from z3c.sqlalchemy import getSAWrapper
@@ -15,8 +17,8 @@ class BaseQuerySource(object):
     implements(IQuerySource)
 
     def __init__(self, db_connector=None, table_name_absolute=None, \
-                value_field='value', token_field='token', title_field='title', \
-                query_limit=5):
+                 value_field='value', token_field='token', title_field='title', \
+                 query_fields=[], query_limit=5):
         super(BaseQuerySource, self).__init__()
 
         self.db_connector = db_connector
@@ -24,6 +26,7 @@ class BaseQuerySource(object):
         self.value_field = value_field
         self.token_field = token_field
         self.title_field = title_field
+        self.query_fields = query_fields or [self.title_field,]
         self.query_limit = query_limit
 
         self.sa_wrapper = getSAWrapper(self.db_connector)
@@ -44,22 +47,27 @@ class BaseQuerySource(object):
         """Return a SimpleTerm using the given value as the token. This may
         be implemented differently if the value is not equal to the token.
         Implemented from IBaseVocabulary"""
-        return self.search(value, field=self.value_field, exact=True).next()
+        return self.search(value, fields=[self.value_field], exact=True).next()
 
     @ram.cache(lambda m, self, value: time() // 60) # cache for a minute
     def getTermByToken(self, value):
         """Implemented from IVocabularyTokenized"""
-        return self.search(value, field=self.token_field, exact=True).next()
+        return self.search(value, fields=[self.token_field], exact=True).next()
 
-    def search(self, query_string, field=None, exact=False):
+    def search(self, query_string, fields=None, exact=False):
         """Implement interface for IQuerySource"""
-        if not field:
-            field = self.title_field
-        search_attribute = getattr(self.mapper_class, field)
+        query_string = query_string.lower()
+        if not fields:
+            fields = self.query_fields
 
         query = self._query
-        query = exact and query.filter(search_attribute == query_string) or \
-                query.filter(search_attribute.like('%%%s%%' % query_string))
+
+        if exact:
+            for field in fields:
+                search_attribute = getattr(self.mapper_class, field)
+                query = query.filter(func.lower(search_attribute) == query_string)
+        else:
+            query = query.filter(or_(*[func.lower(getattr(self.mapper_class, field)).like('%%%s%%' % query_string) for field in fields]))
 
         for result in query[:self.query_limit]:
             yield self.formatResult(result)

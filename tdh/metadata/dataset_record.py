@@ -15,10 +15,10 @@ from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget
 
+from tdh.metadata import sources
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.widgets import ForCodeDataGridFieldFactory, \
         SeoCodeDataGridFieldFactory, UnrestrictedAutocompleteMultiFieldWidget
-from tdh.metadata.sources import ActivitiesQuerySourceFactory
 
 
 RELATIONSHIPS = (
@@ -265,7 +265,7 @@ class IDatasetRecord(form.Schema):
                       with this record."),
         value_type=schema.Choice(
             title=_(u"Activity"),
-            source=ActivitiesQuerySourceFactory(),
+            source=sources.ActivitiesQuerySourceFactory(),
             required=False,
             ),
         required=False,
@@ -327,7 +327,7 @@ class IDatasetRecord(form.Schema):
                       separated by commas."),
       required=False,
       value_type=schema.Choice(
-            vocabulary="tdh.metadata.sources.research_keywords",
+            source=sources.ResearchKeywordQuerySourceFactory(),
             ),
       default=[],
     )
