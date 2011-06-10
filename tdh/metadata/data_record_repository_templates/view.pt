@@ -14,17 +14,68 @@
     Note that we're using Plone 4 macros. Replace them with Plone 3 macros
     if needed.
 </tal:comment>
-
+nn
 <metal:main fill-slot="content-core">
   <metal:content-core define-macro="content-core">
 
-    <h2>
-        Rendered from 
-        data_record_repository_templates/<span tal:replace="template/id" />
-    </h2>
+  <div id="left-hand-side" tal:define="member context/@@plone_portal_state/member; ">
+        <dl id="items-to-be-reviewed" class="collapsible" tal:condition="python: member.has_permission('Review portal content', context) " >
+            <dt class="collapsibleHeader">Items to be Reviewed</dt>
+            <dd class="collapsibleContent">
+            <ul tal:repeat="item view/itemsToReview">
+                <li><a href="dummydata" tal:content="item/Title" tal:attributes="href item/getURL">CollectionTitle</a></li>
+            </ul>
+            </dd>
+        </dl>
+        <dl class="collapsible" id="my-collections">
+            <dt class="collapsibleHeader">My Collections</dt>
+            <dd class="collapsibleContent">
+            <ul>
+                <li><a href="/Plone/resources/private-records">Private Collections</a> 
+                    - unpublished metadata records</li>
+                <li><a href="/Plone/resources/published-records">Published Collections</a> 
+                    - publically accessible metadata records</li>
+                <li><a href="/Plone/resources/rda-records">Collections in RDA </a> 
+                    - metadata records that have been harvested by RDA</li>
+                <li><a href="/Plone/resources/under-review-records">Collections awaiting review</a> 
+                    - metadata records in the publishing workflow</li>
+            </ul>
+            </dd>
+        </dl>
+    </div>
 
+    <div id="right-hand-side">
+        <div id="search-widget" >
+            <label class="hiddenStructure" for="metadataSearch">
+                Metadata Records search
+            </label>
+            <input id="metadataSearch" class="searchField inputLabel inputLabelActive" 
+                type="text" size="30" name="criteria" title="Metadata Records search" />
+            <input type="submit" value="QuickSearch" /><br />
+            <a href="@@search" >Advanced metadata search</a>
+        </div>
 
-    <div tal:content="context/Title">Title inserted here</div>
+        <dl class="collapsible" id="new-collections">
+            <dt class="collapsibleHeader">New Collections</dt>
+            <dd class="collapsibleContent">
+            <dl tal:repeat="new_item view/new_items"> 
+                <dt><a href="#" tal:attribute="href new_item/getURL" tal:content="new_item/title">Collection Title 1</a></dt> 
+                <dd tal:content="new_item/description"></dd> 
+                <dd><strong>Keywords:</strong><span tal:replace="new_item/keywords" /></dd> 
+            </dl>
+            </dd>
+        </dl>
+
+        <dl class="collapsible" id="curation-results">
+            <dt class="collapsibleHeader">Recent Curation Results</dt>
+            <dd class="collapsibleContent">
+            <ul>
+                <li><span><a>Collection title 1</a></span> - <span>accepted</span></li>
+            </ul>
+            </dd>
+        </dl>
+    </div>
+
     
   </metal:content-core>
 </metal:main>

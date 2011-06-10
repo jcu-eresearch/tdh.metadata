@@ -7,6 +7,8 @@ from z3c.form import group, field
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
 
 from tdh.metadata import MessageFactory as _
+from Products.CMFCore.utils import getToolByName
+from Acquisition import aq_inner
 
 
 # Interface class; used to define content-type schema.
@@ -51,6 +53,20 @@ class DataRecordRepositoryView(grok.View):
     grok.require('zope2.View')
     grok.template('view')
     grok.name('view')
+
+    def update(self):
+        context = aq_inner(self.context)
+
+
+    def itemsToReview(self):
+        context = aq_inner(self.context)
+        catalog = getToolByName(context, 'portal_catalog')
+        m_tools = getToolByName(context, 'portal_membership')
+        items_pending = catalog.searchResults(
+                review_state = 'pending',
+                Type = 'Dataset Record' )
+        return items_pending
+
 
 class DataRecordRepositorySearchView(grok.View):
     grok.context(IDataRecordRepository)
