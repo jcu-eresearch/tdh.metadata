@@ -4,6 +4,28 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Put the user search into play on the Associations tab.  Javascript fixes
+  required.
+  [David]
+- Finalised extendability of source query class -- we can now have custom
+  query clauses without having to customise our entire search function.
+  [David]
+- Updated documentation against source classes
+  [David]
+- Added a UserQuerySource for loading user information from ITR's Oracle 
+  database.
+  [David]
+- Made the database configuration much more modular.  We can now specify
+  essentially all configuration in the buildout.cfg files and have our product
+  load our SQLAlchemy connection up for us.  Then we only need to specify
+  what connection to use and use it!
+  [David]
+- Made the keywords source work off the newly provided Oracle database table.
+  Keyword searches work against both fields in the table.
+  [David]
+- BaseQuerySource searchs can now work with multiple PKs, multiple search terms,
+  can work with exact or inexact searches, and are currently case insensitive
+  [David]
 - Refactored the keywords vocabulary into something with a more relevant name.
   This module and class still needs adjustment to work off a database.
   [David]

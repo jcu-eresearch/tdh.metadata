@@ -13,12 +13,13 @@ from plone.uuid.interfaces import IUUID
 
 from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
-from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget
+from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
+        AutocompleteFieldWidget
 
+from tdh.metadata import sources
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.widgets import ForCodeDataGridFieldFactory, \
         SeoCodeDataGridFieldFactory, UnrestrictedAutocompleteMultiFieldWidget
-from tdh.metadata.sources import ActivitiesQuerySourceFactory
 
 
 RELATIONSHIPS = (
@@ -35,9 +36,10 @@ class IParty(Interface):
         vocabulary=RELATIONSHIP_VOCAB,
     )
 
-    user_id = schema.Text(
-        title=_(u"User ID"),
+    user_uuid = schema.Choice(
+        title=_(u"Person"),
         required=True,
+        source=sources.UserQuerySourceFactory(),
     )
 
 DESCRIPTIONS = (
@@ -50,7 +52,7 @@ DESCRIPTIONS_VOCAB = schema.vocabulary.SimpleVocabulary([schema.vocabulary.Simpl
 
 class IDatasetDescription(Interface):
     location_type = schema.Choice(
-        title=_(u"Type of location"),
+        title=_(u"Type"),
         required=True,
         vocabulary=DESCRIPTIONS_VOCAB,
     )
@@ -265,7 +267,7 @@ class IDatasetRecord(form.Schema):
                       with this record."),
         value_type=schema.Choice(
             title=_(u"Activity"),
-            source=ActivitiesQuerySourceFactory(),
+            source=sources.ActivitiesQuerySourceFactory(),
             required=False,
             ),
         required=False,
@@ -327,7 +329,7 @@ class IDatasetRecord(form.Schema):
                       separated by commas."),
       required=False,
       value_type=schema.Choice(
-            vocabulary="tdh.metadata.sources.research_keywords",
+            source=sources.ResearchKeywordQuerySourceFactory(),
             ),
       default=[],
     )
@@ -451,7 +453,8 @@ class DatasetRecordBaseForm(object):
         self.widgets['title'].size = 50
 
     def datagridInitialise(self, subform, widget):
-        pass
+        if 'user_uuid' in subform.fields:
+            subform.fields['user_uuid'].widgetFactory = AutocompleteFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
         pass
