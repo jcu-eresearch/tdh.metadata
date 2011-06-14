@@ -9,12 +9,26 @@ PROFILE_ID = 'profile-%s:default' % PROJECTNAME
 
 zope_config = getConfiguration().product_config[PROJECTNAME]
 
-DB_USER = zope_config.get('rs-db-user', 'rs')
-DB_PASSWORD = zope_config.get('rs-db-password', 'rs')
-DB_CONNECTOR = '%s.corpdb.research_services' % PROJECTNAME
-DB_CONNECTION_STRING = \
-                'oracle+cx_oracle://%s:%s@corpdb.jcu.edu.au:1730/corp' % \
-                (DB_USER, DB_PASSWORD)
+DB_CONNECTIONS = {}
 
-DB_SCHEMA = DB_USER.upper()
+for key in zope_config:
+    if '__db-' in key:
+        key_parts = key.split('__')
+        if key_parts[0] not in DB_CONNECTIONS:
+            DB_CONNECTIONS[key_parts[0]] = {}
+        DB_CONNECTIONS[key_parts[0]][key_parts[1]] = zope_config[key]
+
+for db_connection in DB_CONNECTIONS:
+    connection = DB_CONNECTIONS[db_connection]
+    connection['db-connector-id'] = '%(project)s.%(db_host)s.%(db_user)s' \
+            % dict(project=PROJECTNAME,
+                   db_host=connection['db-host'],
+                   db_user=connection['db-user'])
+    connection['db-connection-string'] = \
+            'oracle+cx_oracle://%(db-user)s:%(db-password)s@%(db-host)s:\
+            %(db-host-port)s/%(db-service)s' % connection
+
+    if 'db-schema' not in connection:
+        connection['db-schema'] = connection['db-user'].upper()
+
 

@@ -4,6 +4,11 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Made the database configuration much more modular.  We can now specify
+  essentially all configuration in the buildout.cfg files and have our product
+  load our SQLAlchemy connection up for us.  Then we only need to specify
+  what connection to use and use it!
+  [David]
 - Made the keywords source work off the newly provided Oracle database table.
   Keyword searches work against both fields in the table.
   [David]

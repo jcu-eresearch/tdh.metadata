@@ -259,6 +259,17 @@ class IDatasetRecord(form.Schema):
     )
 
     form.widget(related_activities=AutocompleteMultiFieldWidget)
+    related_people = schema.List(
+        title=_(u"Related People"),
+        value_type=schema.Choice(
+            title=_(u"User"),
+            source=sources.UserQuerySourceFactory(),
+            required=False,
+            ),
+        required=False,
+    )
+
+    form.widget(related_activities=AutocompleteMultiFieldWidget)
     related_activities = schema.List(
         title=_(u"Related Activities"),
         description=_(u"Enter details of which activities are associated \
