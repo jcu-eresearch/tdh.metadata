@@ -4,6 +4,17 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Refactored the keywords vocabulary into something with a more relevant name.
+  This module and class still needs adjustment to work off a database.
+  [David]
+- Making a QuerySource from our grants records and basing this off our 
+  BaseQuerySource for extensibility.
+  [David]
+- Adding basic SA wrapper for the research services database - this still needs
+  refactoring
+  [David]
+- Adding Products.SQLAlchemyDA as a dependency on package
+  [David]
 - Customising widget for keywords -- this may be refactored out into another
   package and released on pypi.
   [David]

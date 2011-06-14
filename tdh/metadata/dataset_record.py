@@ -13,10 +13,12 @@ from plone.uuid.interfaces import IUUID
 
 from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
+from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget
 
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.widgets import ForCodeDataGridFieldFactory, \
         SeoCodeDataGridFieldFactory, UnrestrictedAutocompleteMultiFieldWidget
+from tdh.metadata.sources import ActivitiesQuerySourceFactory
 
 
 RELATIONSHIPS = (
@@ -256,16 +258,17 @@ class IDatasetRecord(form.Schema):
         required=True,
     )
 
-    form.widget(related_activities=DataGridFieldFactory)
+    form.widget(related_activities=AutocompleteMultiFieldWidget)
     related_activities = schema.List(
         title=_(u"Related Activities"),
         description=_(u"Enter details of which activities are associated \
                       with this record."),
-        value_type=DictRow(
+        value_type=schema.Choice(
             title=_(u"Activity"),
-            schema=IParty,
-        ),
-        required=True,
+            source=ActivitiesQuerySourceFactory(),
+            required=False,
+            ),
+        required=False,
     )
 
     contributors = schema.Text(
@@ -324,7 +327,7 @@ class IDatasetRecord(form.Schema):
                       separated by commas."),
       required=False,
       value_type=schema.Choice(
-            vocabulary="tdh.metadata.keywords",
+            vocabulary="tdh.metadata.sources.research_keywords",
             ),
       default=[],
     )
