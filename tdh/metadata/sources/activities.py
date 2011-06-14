@@ -23,6 +23,8 @@ utils.createAndRegisterSAMapper(
 
 class ActivitiesQuerySource(BaseQuerySource):
 
+    """Source customising display of term titles for research activities."""
+
     def formatResult(self, result):
         value = token = str(int(getattr(result, self.value_field)))
         title = "%(short_title)s (%(start_year)s; %(pi)s)" % result.__dict__

@@ -4,6 +4,14 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Put the user search into play on the Associations tab.  Javascript fixes
+  required.
+  [David]
+- Finalised extendability of source query class -- we can now have custom
+  query clauses without having to customise our entire search function.
+  [David]
+- Updated documentation against source classes
+  [David]
 - Added a UserQuerySource for loading user information from ITR's Oracle 
   database.
   [David]

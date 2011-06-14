@@ -24,6 +24,8 @@ utils.createAndRegisterSAMapper(
 
 class ResearchKeywordQuerySource(BaseQuerySource):
 
+    """Source customising the display of term titles for research keywords."""
+
     def formatResult(self, result):
         value = token = str(getattr(result, self.value_field))
         title = "%(keycode)s - %(keyword)s" % result.__dict__

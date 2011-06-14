@@ -13,7 +13,8 @@ from plone.uuid.interfaces import IUUID
 
 from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
-from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget
+from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
+        AutocompleteFieldWidget
 
 from tdh.metadata import sources
 from tdh.metadata import MessageFactory as _
@@ -35,9 +36,10 @@ class IParty(Interface):
         vocabulary=RELATIONSHIP_VOCAB,
     )
 
-    user_id = schema.Text(
-        title=_(u"User ID"),
+    user_uuid = schema.Choice(
+        title=_(u"Person"),
         required=True,
+        source=sources.UserQuerySourceFactory(),
     )
 
 DESCRIPTIONS = (
@@ -50,7 +52,7 @@ DESCRIPTIONS_VOCAB = schema.vocabulary.SimpleVocabulary([schema.vocabulary.Simpl
 
 class IDatasetDescription(Interface):
     location_type = schema.Choice(
-        title=_(u"Type of location"),
+        title=_(u"Type"),
         required=True,
         vocabulary=DESCRIPTIONS_VOCAB,
     )
@@ -259,17 +261,6 @@ class IDatasetRecord(form.Schema):
     )
 
     form.widget(related_activities=AutocompleteMultiFieldWidget)
-    related_people = schema.List(
-        title=_(u"Related People"),
-        value_type=schema.Choice(
-            title=_(u"User"),
-            source=sources.UserQuerySourceFactory(),
-            required=False,
-            ),
-        required=False,
-    )
-
-    form.widget(related_activities=AutocompleteMultiFieldWidget)
     related_activities = schema.List(
         title=_(u"Related Activities"),
         description=_(u"Enter details of which activities are associated \
@@ -462,7 +453,8 @@ class DatasetRecordBaseForm(object):
         self.widgets['title'].size = 50
 
     def datagridInitialise(self, subform, widget):
-        pass
+        if 'user_uuid' in subform.fields:
+            subform.fields['user_uuid'].widgetFactory = AutocompleteFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
         pass
