@@ -58,10 +58,9 @@ nn
         <dl class="collapsible" id="new-collections">
             <dt class="collapsibleHeader">New Collections</dt>
             <dd class="collapsibleContent">
-            <dl tal:repeat="new_item view/new_items"> 
-                <dt><a href="#" tal:attribute="href new_item/getURL" tal:content="new_item/title">Collection Title 1</a></dt> 
+            <dl tal:repeat="new_item view/newCollections"> 
+                <dt><a href="#" tal:attributes="href new_item/getURL" tal:content="new_item/Title">Collection Title 1</a></dt> 
                 <dd tal:content="new_item/description"></dd> 
-                <dd><strong>Keywords:</strong><span tal:replace="new_item/keywords" /></dd> 
             </dl>
             </dd>
         </dl>
@@ -69,7 +68,7 @@ nn
         <dl class="collapsible" id="curation-results">
             <dt class="collapsibleHeader">Recent Curation Results</dt>
             <dd class="collapsibleContent">
-            <ul>
+            <ul tal:repeat="curation view/curationResults">
                 <li><span><a>Collection title 1</a></span> - <span>accepted</span></li>
             </ul>
             </dd>

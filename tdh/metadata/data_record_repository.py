@@ -57,15 +57,27 @@ class DataRecordRepositoryView(grok.View):
     def update(self):
         context = aq_inner(self.context)
 
-
     def itemsToReview(self):
         context = aq_inner(self.context)
         catalog = getToolByName(context, 'portal_catalog')
-        m_tools = getToolByName(context, 'portal_membership')
         items_pending = catalog.searchResults(
                 review_state = 'pending',
                 Type = 'Dataset Record' )
         return items_pending
+
+    def newCollections(self):
+        context = aq_inner(self.context)
+        catalog = getToolByName(context, 'portal_catalog')
+        num_items = 5
+        return catalog(Type = 'Dataset Record',
+                sort_on = 'modified', 
+                sort_order = 'reverse',
+                sort_limit = num_items)[:num_items]
+
+    def curationResults(self):
+        context = aq_inner(self.context)
+        catalog = getToolByName(context, 'portal_catalog')
+        return []
 
 
 class DataRecordRepositorySearchView(grok.View):
