@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Refactored the database configuration functionality into the utils module.
+  [David] 
 - Put the user search into play on the Associations tab.  Javascript fixes
   required.
   [David]
