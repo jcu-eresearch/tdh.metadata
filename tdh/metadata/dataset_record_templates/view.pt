@@ -1,0 +1,89 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="tdh.metadata">
+<body>
+
+<metal:main fill-slot="content-core">
+  <metal:content-core define-macro="content-core">
+
+  <!-- Descriptions -->
+  <div id="dataset-description-text" class="dataset-section">
+      <h3>Description</h3>
+      <div tal:condition="here/descriptions" tal:content="structure view/w/descriptions/render"></div>
+  </div>
+  <div id="dataset-logo" >
+  </div>
+
+  <!-- Coverage -->
+  <div class="dataset-section">
+      <h3>Coverage</h3>
+      <h4>Temporal Coverage</h4>
+      <b>Start Date:</b> <span tal:replace="python:context.temporal_coverage_start.strftime('%d-%b-%Y')"></span><br />
+      <b>End Date:</b> <span tal:replace="python:context.temporal_coverage_end.strftime('%d-%b-%Y')"></span>
+      <h4>Spatial Coverage</h4>
+      <div tal:condition="context/spatial_coverage_text" tal:content="context/spatial_coverage_text"></div>
+      <div tal:condition="here/spatial_coverage_coords" tal:content="structure view/w/spatial_coverage_coords/render"></div>
+  </div>
+
+  <!-- Keywords -->
+  <div class="dataset-section">
+      <h3>Keywords</h3>
+      <div class="dataset-section-content">
+          <p> <b>JCU Research Theme:</b> 
+          <tal:jcurt tal:repeat="theme here/research_themes">
+          <span tal:replace="theme"></span>
+          <span tal:condition="not:repeat/theme/end">, </span>
+          </tal:jcurt>
+          </p>
+          <p> <b>ANZSRC Socio-economic objectives:</b> 
+          <tal:seo tal:repeat="seo here/seo_codes">
+          <span tal:replace="seo"></span> <br tal:condition="not:repeat/seo/end" />
+          </tal:seo>
+          </p>
+          <p> <b>ANZSRC Fields of research:</b> 
+          <tal:for_codes tal:repeat="for here/for_codes">
+          <span tal:replace="for"></span> <br tal:condition="not:repeat/for/end" />
+          </tal:for_codes>
+          </p>
+          <p><b>Local keywords</b>: <span tal:condition="here/keywords" 
+              tal:replace="structure view/w/keywords/render"></span>
+          </p>
+      </div>
+  </div>
+
+  <!-- Associations -->
+  <div class="dataset-section">
+      <h3>Associations</h3>
+      <div tal:condition="here/related_parties" tal:content="structure view/w/related_parties/render"></div>
+      <div tal:condition="here/related_activities" tal:content="structure view/w/related_activities/render"></div>
+      <div tal:condition="here/contributors" tal:content="here/contributors"></div>
+  </div>
+
+  <!-- Location -->
+  <div class="dataset-section">
+      <h3>Location</h3>
+      <div tal:condition="here/location" tal:content="structure view/w/location/render"></div>
+      <h3>Access to collection</h3>
+      <p><b>Licensing</b>: <span tal:replace="here/licensing"></span>
+      <p><b>Legal rights held over data</b>: <span tal:replace="here/legal_rights"></span>
+      <p><b>Access to collection</b>: <span tal:replace="here/access_restrictions"></span>
+  </div>
+
+  <!-- About the data -->
+  <div class="dataset-section">
+      <h3>About the data</h3>
+      <p> This collection consists of <span tal:replace="context/data_type"></span>.</p>
+      <p><b>Suggested retention period:</b> <span tal:replace="here/retention_period"></span>.<br />
+      <b>Nationally significant collection?</b> <span tal:replace="here/nationally_significant"></span></p>
+  </div>
+
+  </metal:content-core>
+</metal:main>
+
+</body>
+</html>
+
