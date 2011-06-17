@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Made the autocomplete widgets not autofill by default.  There is a bug
+  with this code and this needs to be sorted out upstream.
+  [David]
 - Refactored the database configuration functionality into the utils module.
   [David] 
 - Put the user search into play on the Associations tab.  Javascript fixes

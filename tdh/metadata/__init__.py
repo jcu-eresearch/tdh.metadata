@@ -4,7 +4,6 @@ from z3c.sqlalchemy import createSAWrapper
 
 from tdh.metadata import config
 
-
 #We're creating our SQLAlchemy wrapper and mapping tables in our database.
 for db_connection in config.DB_CONNECTIONS:
     connection = config.DB_CONNECTIONS[db_connection]

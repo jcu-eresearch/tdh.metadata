@@ -105,13 +105,6 @@ class IResearchCode(Interface):
         required=True,
     )
 
-def datagridInitialise(subform, widget):
-    subform.fields = subform.fields.omit('user_id')
-
-def datagridUpdateWidgets(subform, widgets, widget):
-    pass
-    #widgets['relationship'].disabled = True
-
 
 # Interface class; used to define content-type schema.
 
@@ -127,6 +120,7 @@ class IDatasetRecord(form.Schema):
     # and add directives here as necessary.
 
     #form.model("models/dataset_record.xml"
+
 
     #Default fieldset
     title = schema.TextLine(
@@ -436,6 +430,8 @@ class DatasetRecordBaseForm(object):
             self._groups[0].\
                     widgets['spatial_coverage_coords'].rows = 5
             self._groups[2].\
+                    widgets['related_activities'].autoFill = False
+            self._groups[2].\
                     widgets['contributors'].rows = 3
             self._groups[3].\
                     widgets['keywords'].rows = 3
@@ -457,7 +453,8 @@ class DatasetRecordBaseForm(object):
             subform.fields['user_uuid'].widgetFactory = AutocompleteFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
-        pass
+        if widget.name == 'form.widgets.related_parties':
+            widgets['user_uuid'].autoFill = False
 
 
 class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
@@ -465,6 +462,10 @@ class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
     grok.name('tdh.metadata.datasetrecord')
     grok.template('addform')
     form.wrap(False)
+
+#    form.mode(**{'plone.app.versioningbehavior.behaviors.IVersionable.changeNote': 'hidden'})
+#    form.mode(**{'IVersionable.changeNote': 'hidden'})
+#    form.mode(changeNote='hidden')
 
     def update(self):
         super(DatasetRecordAddForm, self).update()

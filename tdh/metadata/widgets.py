@@ -54,6 +54,7 @@ def standardButtonActionFactory(request, field):
 
 
 class UnrestrictedAutocompleteSelectionWidget(AutocompleteMultiSelectionWidget):
+    autoFill = False
     mustMatch = False
     newTermButton = u"Add new"
 
