@@ -22,23 +22,13 @@ utils.createAndRegisterSAMapper(
 )
 
 
-class ResearchKeywordQuerySource(BaseQuerySource):
-
-    """Source customising the display of term titles for research keywords."""
-
-    def formatResult(self, result):
-        value = token = str(getattr(result, self.value_field))
-        title = "%(keycode)s - %(keyword)s" % result.__dict__
-        return SimpleTerm(value, token, title)
-
-
 def ResearchKeywordQuerySourceFactory():
-    return ResearchKeywordQuerySource(
+    return BaseQuerySource(
         db_connector=TABLE_DB_CONNECTION['db-connector-id'],
         table_name_absolute=TABLE_NAME_ABSOLUTE,
         value_field='keycode',
         token_field='keycode',
-        title_field=None, #This gets computed above
+        title_field='keyword',
         query_fields=['keycode', 'keyword'],
         query_limit=5,
      )

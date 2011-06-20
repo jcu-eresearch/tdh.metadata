@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Removing the keycode from the keywords widget.
+  [David]
 - Made the autocomplete widgets not autofill by default.  There is a bug
   with this code and this needs to be sorted out upstream.
   [David]
