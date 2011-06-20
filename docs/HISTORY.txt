@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Making the display view into a dexterity.DisplayForm (to get widgets, etc).
+  [David]
 - Removing the keycode from the keywords widget.
   [David]
 - Made the autocomplete widgets not autofill by default.  There is a bug

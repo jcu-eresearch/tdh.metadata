@@ -489,7 +489,7 @@ class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
 # of this type by uncommenting the grok.name line below or by
 # changing the view class name and template filename to View / view.pt.
 
-class View(grok.View):
+class View(dexterity.DisplayForm):
     grok.context(IDatasetRecord)
     grok.require('zope2.View')
     grok.name('view')
