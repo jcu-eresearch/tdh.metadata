@@ -26,6 +26,7 @@ setup(name='tdh.metadata',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'jcu.theme',
           'plone.app.dexterity',
           'plone.namedfile[blobs]',
           'plone.principalsource',
