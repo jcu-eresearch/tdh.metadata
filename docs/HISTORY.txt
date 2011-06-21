@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Added new dependencies (jcu.theme, collective.z3cwidget.datagridfield,
+  collective.geo.bundle)
+  [David]
 - Making the display view into a dexterity.DisplayForm (to get widgets, etc).
   [David]
 - Removing the keycode from the keywords widget.

@@ -1,7 +1,10 @@
 <metadata>
-  <version>8</version>
-    <dependencies>
+  <version>9</version>
+  <dependencies>
+        <dependency>profile-jcu.theme:default</dependency>
         <dependency>profile-plone.app.dexterity:default</dependency>
         <dependency>profile-plone.app.iterate:plone.app.iterate</dependency>
+        <dependency>profile-collective.z3cform.datagridfield:default</dependency>
+        <dependency>profile-collective.geo.bundle:default</dependency>
     </dependencies>
 </metadata>
