@@ -32,10 +32,16 @@ class UserQuerySource(BaseQuerySource):
     for research keywords."""
 
 
-    def extraClauses(self, query_string, exact=False):
+    def queryCriteria(self, query_string, fields, exact=False):
         """Return a concatenation search across user full names."""
+        criteria = super(UserQuerySource, self).queryCriteria(query_string,
+                                                              fields,
+                                                              exact)
         if not exact:
-            return [func.lower(self.mapper_class.given_name+' '+self.mapper_class.surname).like('%%%s%%' % query_string)]
+            criteria = or_(*[criteria, func.lower(self.mapper_class.given_name+' '+self.mapper_class.surname).like('%%%s%%' % query_string)])
+
+
+        return criteria
 
     def formatResult(self, result):
         """Return vocabulary term with suitably formatted title."""

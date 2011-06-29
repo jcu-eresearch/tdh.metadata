@@ -4,6 +4,10 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Rework sources logic to let child sources return any SQLAlchemy conditions
+  they like.  By default, we operate by or'ing all fields specified if the 
+  search is inexact, and and'ing all fields if the search is exact.
+  [David]
 - Added new dependencies (jcu.theme, collective.z3cwidget.datagridfield,
   collective.geo.bundle)
   [David]

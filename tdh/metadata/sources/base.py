@@ -1,6 +1,6 @@
 from time import time
 
-from sqlalchemy import or_, func
+from sqlalchemy import and_, or_, func
 
 from zope.interface import implements
 from zope.schema.vocabulary import SimpleTerm
@@ -70,41 +70,41 @@ class BaseQuerySource(object):
 
         Implements interface for IQuerySource.
         """
-        try:
-            query_string = query_string.lower()
-        except:
-            import ipdb; ipdb.set_trace()
+        query_string = query_string.lower()
         if not fields:
             fields = self.query_fields
 
         query = self._query
 
-        if exact:
-            for field in fields:
-                search_attribute = getattr(self.mapper_class, field)
-                query = query.filter(func.lower(search_attribute) == query_string)
-        else:
-            clauses = [func.lower(getattr(self.mapper_class, field)).like('%%%s%%' % query_string) for field in fields]
-
-            #Provide a hook for derived classes to add extra conditions to our
-            #query.
-            extra_clauses = self.extraClauses(query_string, exact=exact)
-            if extra_clauses:
-                clauses += extra_clauses
-
-            query = query.filter(or_(*clauses))
+        #Query against our set of search criteria. These are flexible
+        #and can be redefined by any child classes.
+        query = query.filter(self.queryCriteria(query_string, fields, exact))
 
         for result in query[:self.query_limit]:
             yield self.formatResult(result)
 
-    def extraClauses(self, query_string, exact=False):
-        """Return list of extra SA expressions to check in search query.
+    def queryCriteria(self, query_string, fields, exact=False):
+        """Return an SA expression to filter against the search query.
 
-        Provide a hook for derived classes to have extra SQL conditions
+        Provide a hook for derived classes to have custom SQL conditions
         appear as part of the query.  This saves us needing to re-define
         the entire search() function body in every child class.
+
+        Your function should return something that can be passed to a
+        query's filter() function - such as an ``or_([])`` or ``and_([])``
+        statement or a comparison, or anything else you'd like. If you plan
+        to return multiple criteria, then they need to be organised with
+        ``or_`` and ``and_`` accordingly.
+
+        By default, our search works by and'ing all fields if the search
+        is exact and or'ing all fields if the search is inexact.
         """
-        return
+        if exact:
+            return and_(*[func.lower(getattr(self.mapper_class, field)) \
+                         == query_string for field in fields])
+        else:
+            return or_(*[func.lower(getattr(self.mapper_class, field)).\
+                         like('%%%s%%' % query_string) for field in fields])
 
     def formatResult(self, result):
         """Return vocabulary term based on a mapper_class type object.
