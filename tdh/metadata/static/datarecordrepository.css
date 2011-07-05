@@ -1,3 +1,19 @@
+/* @group TDH forms */
+
+input#form-widgets-title {
+    width: 100%;
+    color: Black;
+    font-family: Arial,Tahoma,FreeSans,sans-serif;
+    font-size: 2em;
+    letter-spacing: -0.01em;
+    line-height: 125%;
+}
+
+div.tdh-metadata-form td.datagridwidget-cell {
+    vertical-align:top;
+}
+/* @end */
+
 div#left-hand-side  dl.collapsible,
 div#right-hand-side  div,
 div#right-hand-side dl.collapsible{

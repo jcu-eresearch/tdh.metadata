@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Made title for data record form same as rest of Plone via CSS and
+  adjusted DGF fields.
+  [David]
 - Created work-around for KSS validation on fields.  All values always validate
   now until further notice.
   [David]
