@@ -1,0 +1,23 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml">
+
+   <browser:page
+        name="kss_z3cform_inline_validation"
+        for="..dataset_record.IDatasetRecord"
+        class=".kssvalidation.NullFormValidationView"
+        attribute="validate_input"
+        permission="zope2.View"
+        />
+
+   <browser:page
+        name="kss_z3cform_inline_validation"
+        for="..data_record_repository.IDataRecordRepository"
+        class=".kssvalidation.NullFormValidationView"
+        attribute="validate_input"
+        permission="zope2.View"
+        />
+
+</configure>

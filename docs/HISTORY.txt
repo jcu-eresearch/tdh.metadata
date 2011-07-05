@@ -4,6 +4,16 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Made title for data record form same as rest of Plone via CSS and
+  adjusted DGF fields.
+  [David]
+- Created work-around for KSS validation on fields.  All values always validate
+  now until further notice.
+  [David]
+- Added Collection Type and IP field to data record content type
+  [David]
+- Refactor vocabularies out of our content type
+  [David]
 - Rework sources logic to let child sources return any SQLAlchemy conditions
   they like.  By default, we operate by or'ing all fields specified if the 
   search is inexact, and and'ing all fields if the search is exact.

@@ -27,7 +27,7 @@
       <b>End Date:</b> <span tal:replace="python:context.temporal_coverage_end.strftime('%d-%b-%Y')"></span>
       <h4>Spatial Coverage</h4>
       <div tal:condition="context/spatial_coverage_text" tal:content="context/spatial_coverage_text"></div>
-      <div tal:condition="here/spatial_coverage_coords" tal:content="structure view/w/spatial_coverage_coords/render"></div>
+      <div tal:content="structure view/w/spatial_coverage_coords/render"></div>
   </div>
 
   <!-- Keywords -->
