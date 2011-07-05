@@ -39,6 +39,15 @@ div.dataset-section {
     margin-left: -3ex;
 }
 
+body.template-view.portaltype-tdh-metadata-datasetrecord table.datagridwidget-table-view th.header span.required {
+    display: none
+}
+
+input#form-widgets-related_activities-widgets-query {
+    width: 60ex;
+}
+
+
 /* jcu theme specific coloring */
 #content-core dt a {
     color: #205C90;
