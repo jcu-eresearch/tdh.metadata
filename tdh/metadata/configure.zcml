@@ -43,6 +43,7 @@
       handler=".utils.disable_context_portlets_added_handler"
       />
 
+  <include package=".browser" />
   <include file="widgets.zcml" />
 
 </configure>

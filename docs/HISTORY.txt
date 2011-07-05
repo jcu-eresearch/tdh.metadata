@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Created work-around for KSS validation on fields.  All values always validate
+  now until further notice.
+  [David]
 - Added Collection Type and IP field to data record content type
   [David]
 - Refactor vocabularies out of our content type
