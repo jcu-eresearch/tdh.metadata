@@ -85,7 +85,7 @@ class AnzrcsCodesView(grok.View):
 
 
 
-class IntegrationJavascriptHelper(grok.CodeView):
+class IntegrationJavascriptHelper(grok.View):
     """Used by portal_css and portal_javascripts to determine when to include our
        custom css and Javascript integration code.
 
