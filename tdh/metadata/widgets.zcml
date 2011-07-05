@@ -1,6 +1,7 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
     xmlns:five="http://namespaces.zope.org/five"
+    xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:z3c="http://namespaces.zope.org/z3c"
     xmlns:zcml="http://namespaces.zope.org/zcml">
 
@@ -19,6 +20,14 @@
         widget=".widgets.SeoCodeDataGridField"
         layer="plone.app.z3cform.interfaces.IPloneFormLayer"
         template="widget_templates/anzsrc_code_datagridfield_input.pt"
+        />
+
+    <browser:page
+        name="ploneform-render-widget"
+        for=".widgets.IHtmlAttributesWidget"
+        layer="plone.app.z3cform.interfaces.IPloneFormLayer"
+        class=".widgets.HtmlAttributesRenderWidget"
+        permission="zope.Public"
         />
 
 </configure>

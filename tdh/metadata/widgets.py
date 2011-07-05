@@ -1,14 +1,27 @@
 import zope.component
 import zope.interface
 import zope.location
+from zope.app.pagetemplate.viewpagetemplatefile import ViewPageTemplateFile
 from z3c.form import action, button, interfaces
 from z3c.form.widget import FieldWidget
 from z3c.form.browser.button import ButtonWidget
+from z3c.form.browser.select import SelectWidget
 
+from plone.app.z3cform.templates import RenderWidget
 from plone.formwidget.autocomplete.widget import \
         AutocompleteMultiSelectionWidget
 
 from collective.z3cform.datagridfield import DataGridField
+
+
+class HtmlAttributesRenderWidget(RenderWidget):
+    """Render field attributes as literal HTML.
+    """
+    index = ViewPageTemplateFile('widget_templates/widget.pt')
+
+class IHtmlAttributesWidget(zope.interface.Interface):
+    """Marker interface for widgets to render their attributes as raw HTML.
+    """
 
 class AnzrscCodeDataGridField(DataGridField):
     code_type = ''

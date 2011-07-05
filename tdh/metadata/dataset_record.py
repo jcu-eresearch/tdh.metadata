@@ -2,12 +2,12 @@ from five import grok
 from plone.directives import dexterity, form
 
 from zope import schema
-from zope.interface import Interface, implements, noLongerProvides
-from z3c.form import group, field
+from zope.interface import Interface, alsoProvides
+from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
-from z3c.relationfield.schema import RelationChoice, RelationList
-from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
-from plone.formwidget.contenttree import ObjPathSourceBinder
+#from z3c.relationfield.schema import RelationChoice, RelationList
+#from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
+#from plone.formwidget.contenttree import ObjPathSourceBinder
 from plone.namedfile.field import NamedBlobFile
 from plone.uuid.interfaces import IUUID
 
@@ -16,24 +16,15 @@ from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
         AutocompleteFieldWidget
 
-from tdh.metadata import sources
+from tdh.metadata import interfaces, sources, widgets, vocabularies
 from tdh.metadata import MessageFactory as _
-from tdh.metadata.widgets import ForCodeDataGridFieldFactory, \
-        SeoCodeDataGridFieldFactory, UnrestrictedAutocompleteMultiFieldWidget
 
-
-RELATIONSHIPS = (
-    (u"isManagedBy", u"Is Managed By"),
-    (u"isOwnedBy", u"Is Owned By"),
-    (u"hasAssociationWith", u"Is Associated With"),
-)
-RELATIONSHIP_VOCAB = schema.vocabulary.SimpleVocabulary([schema.vocabulary.SimpleTerm(value=pair[0], token=pair[0], title=pair[1]) for pair in RELATIONSHIPS])
 
 class IParty(Interface):
     relationship = schema.Choice(
         title=_(u"Relationship to Record"),
         required=True,
-        vocabulary=RELATIONSHIP_VOCAB,
+        vocabulary=vocabularies.RELATIONSHIP_VOCAB,
     )
 
     user_uuid = schema.Choice(
@@ -42,39 +33,17 @@ class IParty(Interface):
         source=sources.UserQuerySourceFactory(),
     )
 
-DESCRIPTIONS = (
-    (u"brief", u"Brief"),
-    (u"full", u"Full"),
-    (u"logo", u"Logo"),
-    (u"note", u"Note"),
-)
-DESCRIPTIONS_VOCAB = schema.vocabulary.SimpleVocabulary([schema.vocabulary.SimpleTerm(value=pair[0], token=pair[0], title=pair[1]) for pair in DESCRIPTIONS])
-
 class IDatasetDescription(Interface):
     location_type = schema.Choice(
         title=_(u"Type"),
         required=True,
-        vocabulary=DESCRIPTIONS_VOCAB,
+        vocabulary=vocabularies.DESCRIPTIONS_VOCAB,
     )
 
     value = schema.Text(
         title=_(u"Value"),
         required=True,
     )
-
-
-DATASET_LOCATIONS = (
-    (u"lab", u"Lab (record room number)"),
-    (u"office", u"Office (record room number)"),
-    (u"records-file-number", u"Records File Number"),
-    (u"jcu-server", u"JCU (local server directory)"),
-    (u"jcu-hpc", u"JCU (High Performance Computing)"),
-    (u"jcu-eresearch-spaces", u"JCU (eResearch Spaces)"),
-    (u"external-web", u"External - Web (URL, URI, DOI, Handle)"),
-    (u"external-physical", u"External - Physical"),
-    (u"other", u"Other"),
-)
-DATASET_LOCATIONS_VOCAB = schema.vocabulary.SimpleVocabulary([schema.vocabulary.SimpleTerm(value=pair[0], token=pair[0], title=pair[1]) for pair in DATASET_LOCATIONS])
 
 class IDatasetLocation(Interface):
     designation = schema.Choice(
@@ -85,7 +54,7 @@ class IDatasetLocation(Interface):
     location_type = schema.Choice(
         title=_(u"Type"),
         required=True,
-        vocabulary=DATASET_LOCATIONS_VOCAB,
+        vocabulary=vocabularies.DATASET_LOCATIONS_VOCAB,
         default=_(u"lab"),
     )
 
@@ -138,6 +107,16 @@ class IDatasetRecord(form.Schema):
             schema=IDatasetDescription,
         ),
         required=True,
+    )
+
+    collection_type = schema.Choice(
+      title=_(u"Collection Type"),
+      description=_(u"""Select what types of record you are describing. For
+                    info about these types, see the <a target="_blank" href=\
+                    "http://www.ands.org.au/guides/cpguide/cpgcollection.html"\
+                    >ANDS Collection</a> documentation."""),
+      default=_(u"dataset"),
+      vocabulary=vocabularies.COLLECTION_TYPES_VOCAB,
     )
 
     data_type = schema.Choice(
@@ -281,7 +260,7 @@ class IDatasetRecord(form.Schema):
                           'keywords']
                  )
 
-    form.widget(for_codes=ForCodeDataGridFieldFactory)
+    form.widget(for_codes=widgets.ForCodeDataGridFieldFactory)
     for_codes = schema.List(
       title=_(u"Fields of Research"),
       description=_(u"Select or enter up to three (3) separate Fields of Research (FoR) from the drop-down menus, and click the 'Add' button. Specify how relevant each field is to your research, ensuring relevance percentages total to exactly 100%."),
@@ -291,7 +270,7 @@ class IDatasetRecord(form.Schema):
       ),
     )
 
-    form.widget(seo_codes=SeoCodeDataGridFieldFactory)
+    form.widget(seo_codes=widgets.SeoCodeDataGridFieldFactory)
     seo_codes = schema.List(
       title=_(u"Socio-Economic Objective (SEO) Classifications"),
       required=False,
@@ -316,11 +295,11 @@ class IDatasetRecord(form.Schema):
       ),
     )
 
-    form.widget(keywords=UnrestrictedAutocompleteMultiFieldWidget)
+    form.widget(keywords=widgets.UnrestrictedAutocompleteMultiFieldWidget)
     keywords = schema.List(
       title=_(u"Keywords"),
-      description=_(u"Enter other keywords that relate to your data set, \
-                      separated by commas."),
+      description=_(u"Enter other keywords that relate to your data set. This \
+                    field autocompletes and you can add new keywords."),
       required=False,
       value_type=schema.Choice(
             source=sources.ResearchKeywordQuerySourceFactory(),
@@ -334,6 +313,7 @@ class IDatasetRecord(form.Schema):
               fields=['retention_period',
                       'legal_rights',
                       'licensing',
+                      'intellectual_property',
                       'nationally_significant'])
 
     retention_period = schema.Choice(
@@ -378,6 +358,21 @@ class IDatasetRecord(form.Schema):
         ],
     )
 
+    form.widget(intellectual_property=RadioFieldWidget)
+    intellectual_property = schema.Choice(
+        title=_(u"Intellectual Property"),
+        description=_(u"Select what status the creator of this record had at \
+                      the time of its generation.  Whether this dataset was \
+                      created by staff members or students affects who owns \
+                      the IP."),
+        required=True,
+        default=_(u"Staff"),
+        values = [
+            "Staff",
+            "Student",
+        ],
+    )
+
     nationally_significant = schema.Bool(
       title=_(u"Is your data set Nationally Significant?"),
       description=_(u"If you know or believe your dataset may be Nationally Significant, select this option."),
@@ -406,12 +401,8 @@ class DatasetRecord(dexterity.Item):
         return
 
 
-from plone.z3cform.interfaces import IWrappedForm
-from z3c.form.interfaces import IForm
-
-class DatasetForm(Interface):
+class DatasetForm(interfaces.ITDHForm):
     pass
-
 
 class DatasetRecordBaseForm(object):
 
@@ -446,6 +437,11 @@ class DatasetRecordBaseForm(object):
 
     def updateWidgets(self):
         super(DatasetRecordBaseForm, self).updateWidgets()
+
+        #By providing this interface, title/description render as raw HTML
+        alsoProvides(self.widgets['collection_type'],
+                     widgets.IHtmlAttributesWidget)
+
         self.widgets['title'].size = 50
 
     def datagridInitialise(self, subform, widget):
