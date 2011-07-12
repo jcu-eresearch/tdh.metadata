@@ -38,7 +38,7 @@
         });
 
         addButton.click(function() {
-            $(identifier+'AA-widgets-'+target_field).val(lastMenu.val()).change();
+            $(identifier+'AA-widgets-'+target_field).val(lastMenu.val()).parent().change();
         });
 
     };

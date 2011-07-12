@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Update to latest version of DGF, updating our widget template and fixing
+  our JS for our code fields.
+  [David]
 - Fix issue with dataset form deleting values from certain fields (like
   keywords etc) - this was due to an issue with caching our getTermByToken
   function.
