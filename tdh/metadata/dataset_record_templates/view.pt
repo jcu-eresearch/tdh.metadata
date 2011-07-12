@@ -39,15 +39,13 @@
           <span tal:condition="not:repeat/theme/end">, </span>
           </tal:jcurt>
           </p>
-          <p> <b>ANZSRC Socio-economic objectives:</b> 
-          <tal:seo tal:repeat="seo here/seo_codes">
-          <span tal:replace="seo"></span> <br tal:condition="not:repeat/seo/end" />
-          </tal:seo>
+          <p> <b>ANZSRC Fields of Research:</b> 
+          <span tal:condition="here/for_codes" 
+              tal:replace="structure view/w/for_codes/render"></span>
           </p>
-          <p> <b>ANZSRC Fields of research:</b> 
-          <tal:for_codes tal:repeat="for here/for_codes">
-          <span tal:replace="for"></span> <br tal:condition="not:repeat/for/end" />
-          </tal:for_codes>
+          <p> <b>ANZSRC Socio-economic objectives:</b>
+          <span tal:condition="here/seo_codes" 
+              tal:replace="structure view/w/seo_codes/render"></span>
           </p>
           <p><b>Local keywords</b>: <span tal:condition="here/keywords" 
               tal:replace="structure view/w/keywords/render"></span>
@@ -66,7 +64,7 @@
   <!-- Location -->
   <div class="dataset-section">
       <h3>Location</h3>
-      <div tal:condition="here/location" tal:content="structure view/w/location/render"></div>
+      <div tal:condition="here/locations" tal:content="structure view/w/locations/render"></div>
       <h3>Access to collection</h3>
       <p><b>Licensing</b>: <span tal:replace="here/licensing"></span>
       <p><b>Legal rights held over data</b>: <span tal:replace="here/legal_rights"></span>
