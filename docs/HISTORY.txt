@@ -4,6 +4,16 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Fix issue with dataset form deleting values from certain fields (like
+  keywords etc) - this was due to an issue with caching our getTermByToken
+  function.
+  [David]
+- Stopped using a custom widget for our keywords - we can create a 'fake'
+  result for any value the user types into the field in our QuerySource.
+  [David]
+- Changed various field names in dataset records - this will break backwards
+  compatibility.
+  [David]
 - Made title for data record form same as rest of Plone via CSS and
   adjusted DGF fields.
   [David]
