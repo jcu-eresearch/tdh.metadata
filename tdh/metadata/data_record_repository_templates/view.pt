@@ -7,27 +7,21 @@
       i18n:domain="tdh.metadata">
 <body>
 
-<tal:comment tal:condition="nothing">
-    This is a sample view template. It will not be used for rendering the
-    content unless activated by creation of a view class with a matching name.
-    
-    Note that we're using Plone 4 macros. Replace them with Plone 3 macros
-    if needed.
-</tal:comment>
-nn
 <metal:main fill-slot="content-core">
   <metal:content-core define-macro="content-core">
 
   <div id="left-hand-side" tal:define="member context/@@plone_portal_state/member; ">
-        <dl id="items-to-be-reviewed" class="collapsible" tal:condition="python: member.has_permission('Review portal content', context) " >
+      <dl id="items-to-be-reviewed" class="collapsible" 
+          tal:condition="python: member.has_permission('Review portal content', context)">
             <dt class="collapsibleHeader">Items to be Reviewed</dt>
             <dd class="collapsibleContent">
             <ul tal:repeat="item view/itemsToReview">
-                <li><a href="dummydata" tal:content="item/Title" tal:attributes="href item/getURL">CollectionTitle</a></li>
+                <li><a href="dummydata" tal:content="item/Title"
+                    tal:attributes="href item/getURL">CollectionTitle</a></li>
             </ul>
             </dd>
         </dl>
-        <dl class="collapsible" id="my-collections">
+        <dl class="collapsible" id="my-collections" tal:condition="python: member">
             <dt class="collapsibleHeader">My Collections</dt>
             <dd class="collapsibleContent">
             <ul>
@@ -46,13 +40,16 @@ nn
 
     <div id="right-hand-side">
         <div id="search-widget" >
+            <form action="@@search-repository" method="get" name="dataset_search" id="dataset_searchform">
+                <input type="hidden" name="portal_type:list" value="tdh.metadata.datasetrecord" id="portal_type_2_3">
             <label class="hiddenStructure" for="metadataSearch">
                 Metadata Records search
             </label>
             <input id="metadataSearch" class="searchField inputLabel inputLabelActive" 
-                type="text" size="30" name="criteria" title="Metadata Records search" />
+                type="text" size="30" name="SearchableText" title="Metadata Records search" />
             <input type="submit" value="QuickSearch" /><br />
-            <a href="@@search" >Advanced metadata search</a>
+            <a href="@@search-repository" >Advanced metadata search</a>
+        </form>
         </div>
 
         <dl class="collapsible" id="new-collections">
@@ -65,7 +62,8 @@ nn
             </dd>
         </dl>
 
-        <dl class="collapsible" id="curation-results">
+        <dl class="collapsible" id="curation-results" 
+            tal:condition="view/curationResults">
             <dt class="collapsibleHeader">Recent Curation Results</dt>
             <dd class="collapsibleContent">
             <ul tal:repeat="curation view/curationResults">
