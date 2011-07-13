@@ -90,7 +90,6 @@ class UnrestrictedAutocompleteSelectionWidget(AutocompleteMultiSelectionWidget):
 
     """
 
-
     def render(self):
         add_term_button = button.Button("add", title=self.newTermButton)
         add_term_button.actionFactory = standardButtonActionFactory

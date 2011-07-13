@@ -26,9 +26,10 @@ def ResearchKeywordQuerySourceFactory():
     return BaseQuerySource(
         db_connector=TABLE_DB_CONNECTION['db-connector-id'],
         table_name_absolute=TABLE_NAME_ABSOLUTE,
-        value_field='keycode',
-        token_field='keycode',
+        value_field='keyword',
+        token_field='keyword',
         title_field='keyword',
-        query_fields=['keycode', 'keyword'],
+        query_fields=['keyword'],
         query_limit=5,
+        restricted_to_source=False,
      )

@@ -16,7 +16,8 @@ from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
         AutocompleteFieldWidget
 
-from tdh.metadata import interfaces, sources, widgets, vocabularies
+
+from tdh.metadata import config, interfaces, sources, widgets, vocabularies
 from tdh.metadata import MessageFactory as _
 
 
@@ -34,7 +35,7 @@ class IParty(Interface):
     )
 
 class IDatasetDescription(Interface):
-    location_type = schema.Choice(
+    type = schema.Choice(
         title=_(u"Type"),
         required=True,
         vocabulary=vocabularies.DESCRIPTIONS_VOCAB,
@@ -51,7 +52,7 @@ class IDatasetLocation(Interface):
         values = ['Physical', 'Electronic'],
     )
 
-    location_type = schema.Choice(
+    type = schema.Choice(
         title=_(u"Type"),
         required=True,
         vocabulary=vocabularies.DATASET_LOCATIONS_VOCAB,
@@ -107,6 +108,7 @@ class IDatasetRecord(form.Schema):
             schema=IDatasetDescription,
         ),
         required=True,
+        default=[],
     )
 
     collection_type = schema.Choice(
@@ -185,13 +187,13 @@ class IDatasetRecord(form.Schema):
     #Location fieldset
     form.fieldset('data_location',
                   label=u"Data Location",
-                  fields=['location',
+                  fields=['locations',
                           'dataset_data',
                          ],
                  )
 
-    form.widget(location=DataGridFieldFactory)
-    location = schema.List(
+    form.widget(locations=DataGridFieldFactory)
+    locations = schema.List(
         title=_(u"Locations"),
         description=_(u"Enter details of where, if any, physical and \
                       electronic data is stored."),
@@ -200,6 +202,7 @@ class IDatasetRecord(form.Schema):
             schema=IDatasetLocation,
         ),
         required=False,
+        default=[],
     )
 
     dataset_data = NamedBlobFile(
@@ -218,8 +221,6 @@ class IDatasetRecord(form.Schema):
                           'related_activities',
                           'contributors'],
                  )
-                  #datagridUpdateWidgets=datagridUpdateWidgets,
-                  #datagridInitialise=datagridInitialise)
 
     form.widget(related_parties=DataGridFieldFactory)
     related_parties = schema.List(
@@ -231,6 +232,7 @@ class IDatasetRecord(form.Schema):
             schema=IParty,
         ),
         required=True,
+        default=[],
     )
 
     form.widget(related_activities=AutocompleteMultiFieldWidget)
@@ -241,9 +243,9 @@ class IDatasetRecord(form.Schema):
         value_type=schema.Choice(
             title=_(u"Activity"),
             source=sources.ActivitiesQuerySourceFactory(),
-            required=False,
             ),
         required=False,
+        default=[],
     )
 
     contributors = schema.Text(
@@ -268,12 +270,14 @@ class IDatasetRecord(form.Schema):
           title=_(u"FoR Code"),
           schema=IResearchCode,
       ),
+      required=True,
     )
 
     form.widget(seo_codes=widgets.SeoCodeDataGridFieldFactory)
     seo_codes = schema.List(
       title=_(u"Socio-Economic Objective (SEO) Classifications"),
       required=False,
+      default=[],
       value_type=DictRow(
           title=_(u"SEO Code"),
           schema=IResearchCode,
@@ -295,7 +299,7 @@ class IDatasetRecord(form.Schema):
       ),
     )
 
-    form.widget(keywords=widgets.UnrestrictedAutocompleteMultiFieldWidget)
+    form.widget(keywords=AutocompleteMultiFieldWidget)
     keywords = schema.List(
       title=_(u"Keywords"),
       description=_(u"Enter other keywords that relate to your data set. This \
@@ -426,6 +430,8 @@ class DatasetRecordBaseForm(object):
                     widgets['contributors'].rows = 3
             self._groups[3].\
                     widgets['keywords'].rows = 3
+            self._groups[3].\
+                    widgets['keywords'].autoFill = False
             self._groups[4].\
                     widgets['legal_rights'].rows = 4
             self._groups[4].\

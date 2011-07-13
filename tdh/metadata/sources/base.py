@@ -22,7 +22,8 @@ class BaseQuerySource(object):
 
     def __init__(self, db_connector=None, table_name_absolute=None,
                  value_field='value', token_field='token',
-                 title_field='title', query_fields=[], query_limit=5):
+                 title_field='title', query_fields=[], query_limit=5,
+                 restricted_to_source=True):
         super(BaseQuerySource, self).__init__()
 
         self.db_connector = db_connector
@@ -32,6 +33,7 @@ class BaseQuerySource(object):
         self.title_field = title_field
         self.query_fields = query_fields or [self.title_field,]
         self.query_limit = query_limit
+        self.restricted_to_source = restricted_to_source
 
         self.sa_wrapper = getSAWrapper(self.db_connector)
         self.mapper_class = \
@@ -57,11 +59,12 @@ class BaseQuerySource(object):
         """
         return self.search(value, fields=[self.value_field], exact=True).next()
 
-    @ram.cache(lambda m, self, value: time() // 60) # cache for a minute
+    @ram.cache(lambda m, self, value: value + str(time() // 60)) # cache for a minute
     def getTermByToken(self, value):
         """Return term obtained from given token value.
 
-        Implemented from IVocabularyTokenized.
+        Implemented from IVocabularyTokenized. Watch out here because a field's
+        value can be entirely erased on save if a given token can't be found.
         """
         return self.search(value, fields=[self.token_field], exact=True).next()
 
@@ -82,6 +85,11 @@ class BaseQuerySource(object):
 
         for result in query[:self.query_limit]:
             yield self.formatResult(result)
+
+        #Check if we're doing a restricted search. If we aren't, then fake a
+        #result using our search query for all values.
+        if not self.restricted_to_source:
+            yield SimpleTerm(query_string, query_string, query_string)
 
     def queryCriteria(self, query_string, fields, exact=False):
         """Return an SA expression to filter against the search query.
