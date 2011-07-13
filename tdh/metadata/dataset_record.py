@@ -16,6 +16,7 @@ from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
         AutocompleteFieldWidget
 
+import jpype
 
 from tdh.metadata import config, interfaces, sources, widgets, validation, \
         vocabularies
@@ -29,7 +30,7 @@ class IParty(Interface):
         vocabulary=vocabularies.RELATIONSHIP_VOCAB,
     )
 
-    user_uuid = schema.Choice(
+    user_uid = schema.Choice(
         title=_(u"Person"),
         required=True,
         source=sources.UserQuerySourceFactory(),
@@ -411,7 +412,6 @@ class DatasetRecord(dexterity.Item):
 
     @id.setter
     def id(self, value):
-        print 'trying to set as: '+value
         return
 
 
@@ -461,12 +461,12 @@ class DatasetRecordBaseForm(object):
         self.widgets['title'].size = 50
 
     def datagridInitialise(self, subform, widget):
-        if 'user_uuid' in subform.fields:
-            subform.fields['user_uuid'].widgetFactory = AutocompleteFieldWidget
+        if 'user_uid' in subform.fields:
+            subform.fields['user_uid'].widgetFactory = AutocompleteFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
         if widget.name == 'form.widgets.related_parties':
-            widgets['user_uuid'].autoFill = False
+            widgets['user_uid'].autoFill = False
 
 
 class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
@@ -505,13 +505,222 @@ class View(dexterity.DisplayForm):
     grok.context(IDatasetRecord)
     grok.require('zope2.View')
     grok.name('view')
+    grok.template('view')
 
 
-class SampleView(grok.View):
+class RifcsView(grok.View):
     grok.context(IDatasetRecord)
     grok.require('zope2.View')
+    grok.name('rifcs')
+#    grok.template('rifcs')
 
-    # grok.name('view)
+    user_query_source = sources.UserQuerySourceFactory()
+
+    def render(self):
+#       filename = '%s.xml' % self.context.id
+        self.request.response.setHeader('Content-Type', 'application/xml')
+#        self.request.response.setHeader('Content-Disposition', \
+#'attachment; filename="%s"' % filename)
+        return self.renderRifcs()
+
+    def renderRifcs(self):
+        rifcs_xml = ''
+
+        #Sanity check before we start using JPype
+        if not jpype.isThreadAttachedToJVM():
+            jpype.attachThreadToJVM()
+
+        #Can't have too many sanity checks since something might be amiss
+        if jpype.isThreadAttachedToJVM():
+            org = jpype.JPackage('org')
+            null = None
+
+            metadata_wrapper = org.ands.rifcs.base.RIFCSWrapper()
+            rifcs = metadata_wrapper.getRIFCSObject()
+            registry = rifcs.newRegistryObject()
+
+            registry.setKey(self.context.id)
+            registry.setGroup('JCU')
+            registry.setOriginatingSource('http://www.jcu.edu.au')
+
+            collection = registry.newCollection()
+            collection.setType(self.context.collection_type)
+            #XXX Need to select suitable identifiers here
+            #See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
+            collection.addIdentifier(jpype.JString("jcu.edu.au/%s" % \
+                                                   self.context.id),
+                                     jpype.JString("local")
+                                    )
+
+            name = collection.newName()
+            name.setType('primary')
+            name.addNamePart(jpype.JString(self.context.title),
+                             None)
+            collection.addName(name)
+
+            #location -- all address types are not RIF-CS standard at present
+            locations = self.context.locations + [
+                {'type': 'url',
+                 'value': self.context.absolute_url(),
+                 'designation': 'Electronic',
+                },
+            ]
+
+            for location in locations:
+                collection_location = collection.newLocation()
+                address = collection_location.newAddress()
+                if location['designation'] == 'Physical':
+                    physical_address = address.newPhysical()
+                    physical_address.setType('streetAddress')
+                    #XXX We need to do some fancy stuff here to make
+                    # complete addresses
+                    address_part = physical_address.newAddressPart()
+                    address_part.setValue(location['value'])
+                    address_part.setType(location['type'])
+
+                    physical_address.addAddressPart(address_part)
+                    address.addPhysical(physical_address)
+
+                elif location['designation'] == 'Electronic':
+                    electronic_address = address.newElectronic()
+                    electronic_address.setValue(location['value'])
+                    electronic_address.setType(location['type'])
+                    address.addElectronic(electronic_address)
+
+                #Now add our location to the collection
+                collection_location.addAddress(address)
+                collection.addLocation(collection_location)
+
+            #relatedObject - for parties and activities
+            #Related parties
+            for party in self.context.related_parties:
+                user_record = self.user_query_source.prepareQuery(
+                    query_string=party['user_uid'],
+                    fields=['login_id'],
+                    exact=True
+                ).first()
+
+                #This should always be true unless something's gone very wrong
+                #and our user record isn't present.
+                if user_record:
+                    related_party = collection.newRelatedObject()
+                    related_party.setKey('jcu.edu.au/%s' % user_record.uuid)
+                    related_party.addRelation(party['relationship'],
+                                              None,
+                                              None,
+                                              None)
+                    collection.addRelatedObject(related_party)
+
+                #Prepare our party object for RIF-CS at the same time
+                rifcs_party = registry.newParty()
+
+                #XXX Need to clarify whether this identifier is okay
+                rifcs_party_id = rifcs_party.newIdentifier()
+                rifcs_party_id.setType('local')
+                rifcs_party_id.setValue('jcu.edu.au/%s' % user_record.uuid)
+                rifcs_party.addIdentifier(rifcs_party_id)
+
+                #Prepare the name for our party
+                rifcs_party_name = rifcs_party.newName()
+                rifcs_party_name.setType('primary')
+                rifcs_party_name_parts = {'title': user_record.salutation,
+                                          'given': user_record.given_name,
+                                          'family': user_record.surname,
+                                         }
+
+                for part in rifcs_party_name_parts:
+                    rifcs_party_name.addNamePart(rifcs_party_name_parts[part],
+                                                 part)
+                rifcs_party.addName(rifcs_party_name)
+
+                #Prepare the party's electronic address
+                rifcs_party_location = rifcs_party.newLocation()
+                rifcs_party_address = rifcs_party_location.newAddress()
+                rifcs_party_address_electronic = \
+                        rifcs_party_address.newElectronic()
+                rifcs_party_address_electronic.setValue(user_record.email_alias)
+                rifcs_party_address_electronic.setType('email')
+                rifcs_party_address.addElectronic(electronic_address)
+                rifcs_party_location.addAddress(rifcs_party_address)
+                rifcs_party.addLocation(rifcs_party_location)
+
+                registry.addParty(rifcs_party)
+
+            #TODO Related activities
+
+
+            #subject
+            keyword_types = {'anzsrc-for': self.context.for_codes,
+                             'anzsrc-seo': self.context.seo_codes,
+                             'local': self.context.keywords,
+                            }
+
+            for type in keyword_types:
+                for keyword in keyword_types[type]:
+                    #If we have a dict, we have a wrapped keyword
+                    if isinstance(keyword, dict):
+                        keyword = keyword['code']
+                    collection.addSubject(keyword, type, None)
+
+            if self.context.data_type:
+                collection.addSubject(self.context.data_type, 'local', None)
+
+
+            #description
+            descriptions = self.context.descriptions + [
+                {'type': 'accessRights',
+                 'value': self.context.access_restrictions},
+                {'type': 'rights',
+                 'value': self.context.legal_rights},
+            ]
+
+            for description in descriptions:
+                type = description['type']
+                value = description['value']
+                if value:
+                    collection.addDescription(value, type, None)
+
+            #coverage
+            coverage = collection.newCoverage()
+            coverage.addTemporalDate(
+                self.context.temporal_coverage_start.isoformat(),
+                "dateFrom",
+                "W3CDTF"
+            )
+            coverage.addTemporalDate(
+                self.context.temporal_coverage_end.isoformat(),
+                "dateTo",
+                "W3CDTF"
+            )
+
+            coverage_spatial_text = coverage.newSpatial()
+            coverage_spatial_text.setValue(self.context.spatial_coverage_text)
+            coverage_spatial_text.setType("text")
+            coverage.addSpatial(coverage_spatial_text)
+
+            from shapely import wkt
+            geometry = wkt.loads(self.context.spatial_coverage_coords)
+            #XXX Need to handle situations with just point or linestring
+            if geometry.type == 'Polygon':
+                coverage_spatial_coords = coverage.newSpatial()
+                coords = geometry.__geo_interface__['coordinates'][0]
+                coords_formatted = ' '.join(['%s,%s' % x for x in coords])
+                coverage_spatial_coords.setValue(coords_formatted)
+                coverage_spatial_coords.setType("kmlPolyCoords")
+                coverage.addSpatial(coverage_spatial_coords)
+
+            collection.addCoverage(coverage);
+
+            #citationInfo - not implemented
+            #relatedInfo - not implemented
+
+            #Marshall all of our relevant objects into our RIF-CS
+            registry.addCollection(collection)
+            rifcs.addRegistryObject(registry)
+            rifcs_xml = metadata_wrapper.toString()
+
+        return rifcs_xml
+
 
 
 #    form.widget(smarties=AutocompleteFieldWidget)
