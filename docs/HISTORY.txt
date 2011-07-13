@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Added invariant to check out dataset dates.
+  [David]
 - Update to latest version of DGF, updating our widget template and fixing
   our JS for our code fields.
   [David]
