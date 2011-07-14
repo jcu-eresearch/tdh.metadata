@@ -1,20 +1,19 @@
-from five import grok
-from plone.directives import dexterity, form
+from datetime import datetime
 
+from five import grok
 from zope import schema
 from zope.interface import Interface, alsoProvides, invariant
 from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
-#from z3c.relationfield.schema import RelationChoice, RelationList
-#from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
-#from plone.formwidget.contenttree import ObjPathSourceBinder
+
+from plone.directives import dexterity, form
+from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
+        AutocompleteFieldWidget
 from plone.namedfile.field import NamedBlobFile
 from plone.uuid.interfaces import IUUID
 
 from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
-from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
-        AutocompleteFieldWidget
 
 import jpype
 
@@ -515,6 +514,77 @@ class RifcsView(grok.View):
 #    grok.template('rifcs')
 
     user_query_source = sources.UserQuerySourceFactory()
+    activities_query_source = sources.ActivitiesQuerySourceFactory()
+
+    def createRelatedObject(self, collection, key, relationship):
+        related_object = collection.newRelatedObject()
+        related_object.setKey(key)
+        related_object.addRelation(relationship, None, None, None)
+        return related_object
+
+    def createIdentifier(self, node, type, value):
+        identifier = node.newIdentifier()
+        identifier.setType(type)
+        identifier.setValue(value)
+        return identifier
+
+    def addDateTimeToCoverage(self, coverage, datetime_instance, type):
+        """Add a temporal element to a Coverage object.
+
+        Expects datetime_instance as a datetime object or something else
+        with an isoformat() function available to produce dates and/or times
+        in ISO 8601 format.  See http://www.w3.org/TR/NOTE-datetime for more
+        information or just search the web for ISO 8601.
+        """
+        coverage.addTemporalDate(datetime_instance.isoformat(),
+                                 type,
+                                 "W3CDTF")
+
+    def addDescriptionsToObject(self, node, values):
+        """This function expects a list of dicts to create descriptions for.
+
+        The format should be like this [{'type': 'brief', 'value': 'Foobar'}].
+        """
+        for description in values:
+            type = description['type']
+            value = description['value']
+            if value:
+                description_created = node.newDescription()
+                description_created.setType(type)
+                description_created.setValue(value)
+                node.addDescription(description_created)
+
+    def addNamesToObject(self, node, values):
+        """This function expects a list of dicts to create names for.
+
+        The format should be like this [{'type': 'primary', 'value': 'Foobar'}].
+        """
+        for name in values:
+            type = name['type']
+            value = name['value']
+            if value:
+                name_created = node.newName()
+                name_created.setType(type)
+                name_created.addNamePart(jpype.JString(value), None)
+                node.addName(name_created)
+
+    def addSubjectsToObject(self, node, values):
+        """This function expects a list of dicts to create subjects for.
+
+        The format should be like this [{'type': 'local', 'value': 'Foobar'}].
+        """
+        for subject_wrapper in values:
+            type = subject_wrapper['type']
+            subjects = subject_wrapper['value']
+            for subject in subjects:
+                #If we have a dict, we have a wrapped keyword/subject
+                if isinstance(subject, dict):
+                    subject = subject['code']
+
+                subject_new = node.newSubject()
+                subject_new.setType(type)
+                subject_new.setValue(subject)
+                node.addSubject(subject_new)
 
     def render(self):
 #       filename = '%s.xml' % self.context.id
@@ -547,16 +617,17 @@ class RifcsView(grok.View):
             collection.setType(self.context.collection_type)
             #XXX Need to select suitable identifiers here
             #See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
-            collection.addIdentifier(jpype.JString("jcu.edu.au/%s" % \
-                                                   self.context.id),
-                                     jpype.JString("local")
-                                    )
+            collection_identifier = \
+                    self.createIdentifier(collection,
+                                          "jcu.edu.au/%s" % self.context.id,
+                                          'local')
+            collection.addIdentifier(collection_identifier)
 
-            name = collection.newName()
-            name.setType('primary')
-            name.addNamePart(jpype.JString(self.context.title),
-                             None)
-            collection.addName(name)
+            collection_names = [
+                {'type': 'primary',
+                 'value': self.context.title},
+            ]
+            self.addNamesToObject(collection, collection_names)
 
             #location -- all address types are not RIF-CS standard at present
             locations = self.context.locations + [
@@ -591,8 +662,7 @@ class RifcsView(grok.View):
                 collection_location.addAddress(address)
                 collection.addLocation(collection_location)
 
-            #relatedObject - for parties and activities
-            #Related parties
+            #relatedObject - related parties
             for party in self.context.related_parties:
                 user_record = self.user_query_source.prepareQuery(
                     query_string=party['user_uid'],
@@ -600,24 +670,22 @@ class RifcsView(grok.View):
                     exact=True
                 ).first()
 
-                #This should always be true unless something's gone very wrong
-                #and our user record isn't present.
+                #This should always be here unless something's gone very wrong
                 if user_record:
-                    related_party = collection.newRelatedObject()
-                    related_party.setKey('jcu.edu.au/%s' % user_record.uuid)
-                    related_party.addRelation(party['relationship'],
-                                              None,
-                                              None,
-                                              None)
+                    user_record_id = 'jcu.edu.au/%s' % user_record.uuid
+                    related_party = self.createRelatedObject(
+                        collection=collection,
+                        key=user_record_id,
+                        relationship=party['relationship']
+                    )
                     collection.addRelatedObject(related_party)
 
                 #Prepare our party object for RIF-CS at the same time
                 rifcs_party = registry.newParty()
 
                 #XXX Need to clarify whether this identifier is okay
-                rifcs_party_id = rifcs_party.newIdentifier()
-                rifcs_party_id.setType('local')
-                rifcs_party_id.setValue('jcu.edu.au/%s' % user_record.uuid)
+                rifcs_party_id = self.createIdentifier(rifcs_party, 'local',
+                                                       user_record_id)
                 rifcs_party.addIdentifier(rifcs_party_id)
 
                 #Prepare the name for our party
@@ -640,31 +708,102 @@ class RifcsView(grok.View):
                         rifcs_party_address.newElectronic()
                 rifcs_party_address_electronic.setValue(user_record.email_alias)
                 rifcs_party_address_electronic.setType('email')
-                rifcs_party_address.addElectronic(electronic_address)
+                rifcs_party_address.addElectronic(\
+                    rifcs_party_address_electronic)
                 rifcs_party_location.addAddress(rifcs_party_address)
                 rifcs_party.addLocation(rifcs_party_location)
 
                 registry.addParty(rifcs_party)
 
-            #TODO Related activities
+            #relatedObject - related activities
+            for activity in self.context.related_activities:
+                activity_record = \
+                        self.activities_query_source.prepareQuery(
+                            query_string=activity,
+                            fields=['app_id'],
+                            exact=True
+                        ).first()
 
+                #This should always be here unless something's gone missing
+                #from the database
+                if activity_record:
+                    activity_record_id = 'jcu.edu.au/%s' % \
+                            activity_record.app_id
+                    related_activity = self.createRelatedObject(
+                        collection=collection,
+                        key=activity_record_id,
+                        relationship='isOutputOf'
+                    )
+                    collection.addRelatedObject(related_activity)
 
+                    rifcs_activity = registry.newActivity()
+                    rifcs_activity.setType('project')
+
+                    rifcs_activity_names = [
+                        {'type': 'primary',
+                         'value': activity_record.title},
+                        {'type': 'abbreviated',
+                         'value': activity_record.short_title},
+                    ]
+
+                    rifcs_activity_record_note = \
+                            config.RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE % \
+                            activity_record.__dict__
+
+                    activity_descriptions = [
+                        {'type': 'brief',
+                         'value': activity_record.summary},
+                        {'type': 'note',
+                         'value': rifcs_activity_record_note}
+                    ]
+                    self.addDescriptionsToObject(rifcs_activity,
+                                                 activity_descriptions)
+
+                    rifcs_activity_coverage = rifcs_activity.newCoverage()
+                    self.addDateTimeToCoverage(
+                        coverage=rifcs_activity_coverage,
+                        datetime_instance=\
+                            datetime.strptime(activity_record.start_year,
+                                              '%Y'),
+                        type="dateFrom"
+                    )
+                    rifcs_activity.addCoverage(rifcs_activity_coverage)
+
+                    #Create our flexible keyword sources. It doesn't matter
+                    #here if any of our values are empty because we'll check
+                    #them.
+                    keyword_sources = {
+                        'anzrc-for': activity_record.for_codes,
+                        'anzrc-seo': activity_record.seo_codes,
+                        'local': activity_record.keywords
+                    }
+                    rifcs_activity_keywords = []
+                    for type in keyword_sources:
+                        keywords = keyword_sources[type]
+                        if keywords:
+                            value = {'type': type,
+                                     'value': keywords.split(', ')
+                                    }
+                            rifcs_activity_keywords.append(value)
+
+                    self.addSubjectsToObject(rifcs_activity,
+                                             rifcs_activity_keywords)
+
+                    registry.addActivity(rifcs_activity)
+
+            #Back to handling our collection...
             #subject
-            keyword_types = {'anzsrc-for': self.context.for_codes,
-                             'anzsrc-seo': self.context.seo_codes,
-                             'local': self.context.keywords,
-                            }
-
-            for type in keyword_types:
-                for keyword in keyword_types[type]:
-                    #If we have a dict, we have a wrapped keyword
-                    if isinstance(keyword, dict):
-                        keyword = keyword['code']
-                    collection.addSubject(keyword, type, None)
-
-            if self.context.data_type:
-                collection.addSubject(self.context.data_type, 'local', None)
-
+            keyword_types = [
+                {'type': 'anzsrc-for',
+                 'value': self.context.for_codes},
+                {'type': 'anzsrc-seo',
+                 'value': self.context.seo_codes},
+                {'type': 'local',
+                 'value': self.context.keywords},
+                {'type': 'local',
+                 'value': [self.context.data_type,]},
+            ]
+            self.addSubjectsToObject(collection, keyword_types)
 
             #description
             descriptions = self.context.descriptions + [
@@ -674,23 +813,19 @@ class RifcsView(grok.View):
                  'value': self.context.legal_rights},
             ]
 
-            for description in descriptions:
-                type = description['type']
-                value = description['value']
-                if value:
-                    collection.addDescription(value, type, None)
+            self.addDescriptionsToObject(collection, descriptions)
 
             #coverage
             coverage = collection.newCoverage()
-            coverage.addTemporalDate(
-                self.context.temporal_coverage_start.isoformat(),
-                "dateFrom",
-                "W3CDTF"
+            self.addDateTimeToCoverage(
+                coverage,
+                datetime_instance=self.context.temporal_coverage_start,
+                type="dateFrom"
             )
-            coverage.addTemporalDate(
-                self.context.temporal_coverage_end.isoformat(),
-                "dateTo",
-                "W3CDTF"
+            self.addDateTimeToCoverage(
+                coverage,
+                datetime_instance=self.context.temporal_coverage_end,
+                type="dateTo"
             )
 
             coverage_spatial_text = coverage.newSpatial()
@@ -713,6 +848,12 @@ class RifcsView(grok.View):
 
             #citationInfo - not implemented
             #relatedInfo - not implemented
+
+            #Extra metadata about the actual record itself
+            collection.setDateAccessioned(\
+                self.context.creation_date.utcdatetime().isoformat())
+            collection.setDateModified(\
+                self.context.modification_date.utcdatetime().isoformat())
 
             #Marshall all of our relevant objects into our RIF-CS
             registry.addCollection(collection)

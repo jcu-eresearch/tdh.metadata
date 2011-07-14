@@ -13,3 +13,12 @@ DB_CONNECTIONS = utils.processDatabaseConnections(zope_config)
 
 JVM_PATH = jpype.getDefaultJVMPath()
 RIFCS_API_LOCATION = zope_config['rifcs-api-location']
+
+RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE = """
+Start Year: %(start_year)s
+Grant Year: %(grant_year)s
+Funding Type: %(type)s
+Funding Scheme: %(scheme)s
+Principle Investigator: %(pi)s
+Researchers: %(researchers)s
+"""
