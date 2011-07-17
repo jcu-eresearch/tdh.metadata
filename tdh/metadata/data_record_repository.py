@@ -83,5 +83,5 @@ class DataRecordRepositoryView(grok.View):
 class DataRecordRepositorySearchView(grok.View):
     grok.context(IDataRecordRepository)
     grok.require('zope2.View')
-    grok.template('search')
-    grok.name('search')
+    grok.template('search_form')
+    grok.name('search_form')

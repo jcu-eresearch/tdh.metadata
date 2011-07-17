@@ -34,9 +34,7 @@ class UserQuerySource(BaseQuerySource):
 
     def queryCriteria(self, query_string, fields, exact=False):
         """Return a concatenation search across user full names."""
-        criteria = super(UserQuerySource, self).queryCriteria(query_string,
-                                                              fields,
-                                                              exact)
+        criteria = super(UserQuerySource, self).queryCriteria(query_string,fields,exact)
         if not exact:
             criteria = or_(*[criteria, func.lower(self.mapper_class.given_name+' '+self.mapper_class.surname).like('%%%s%%' % query_string)])
 
