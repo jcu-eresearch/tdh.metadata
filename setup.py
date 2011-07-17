@@ -37,6 +37,8 @@ setup(name='tdh.metadata',
           'collective.z3cform.mapwidget',
           'collective.z3cform.datagridfield',
           'Products.SQLAlchemyDA',
+          'JPype',
+          'shapely',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

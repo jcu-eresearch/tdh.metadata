@@ -1,6 +1,7 @@
 from zope.i18nmessageid import MessageFactory
-
 from z3c.sqlalchemy import createSAWrapper
+
+import jpype
 
 from tdh.metadata import config
 
@@ -13,3 +14,6 @@ for db_connection in config.DB_CONNECTIONS:
 # Set up the i18n message factory for our package
 MessageFactory = MessageFactory('tdh.metadata')
 
+# Initialise our JVM for use with RIF-CS and do it early.
+jpype.startJVM(config.JVM_PATH,
+               '-Djava.class.path=%s' % config.RIFCS_API_LOCATION)

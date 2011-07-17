@@ -4,6 +4,15 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Changed query source base to allow us to sneak in and get the SQLAlchemy
+  query before it returns any wrapped results.  We can now get the query
+  and raw results for use within RIF-CS.
+  [David]
+- Added basic RIF-CS integration, using JPype.  You now need to have JPype
+  present for this to all work.
+  [David]
+- Added invariant to check out dataset dates.
+  [David]
 - Update to latest version of DGF, updating our widget template and fixing
   our JS for our code fields.
   [David]

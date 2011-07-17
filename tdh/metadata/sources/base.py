@@ -71,17 +71,14 @@ class BaseQuerySource(object):
     def search(self, query_string, fields=None, exact=False):
         """Return generator for search results obtained from SA query.
 
-        Implements interface for IQuerySource.
+        Implements interface for IQuerySource. Returns a generator of
+        SimpleTerm objects, which are useful for through-the-web forms.
+        For getting access to the actual results of the query or the
+        query before execution, see the prepareQuery method below.
         """
         query_string = query_string.lower()
-        if not fields:
-            fields = self.query_fields
 
-        query = self._query
-
-        #Query against our set of search criteria. These are flexible
-        #and can be redefined by any child classes.
-        query = query.filter(self.queryCriteria(query_string, fields, exact))
+        query = self.prepareQuery(query_string, fields, exact)
 
         for result in query[:self.query_limit]:
             yield self.formatResult(result)
@@ -90,6 +87,24 @@ class BaseQuerySource(object):
         #result using our search query for all values.
         if not self.restricted_to_source:
             yield SimpleTerm(query_string, query_string, query_string)
+
+    def prepareQuery(self, query_string, fields, exact=False):
+        """Prepare the SA query for execution.
+
+        This method is abstracted for convenience for other aspects of
+        code which may need to obtain a query object to do other things
+        with the query and its results. For instance, this may be useful
+        when trying to look up a record from the given database or so
+        forth and you want the raw result.
+        """
+        if not fields:
+            fields = self.query_fields
+
+        query = self._query
+
+        #Prepare query against our set of search criteria. These are flexible
+        #and can be redefined by any child classes.
+        return query.filter(self.queryCriteria(query_string, fields, exact))
 
     def queryCriteria(self, query_string, fields, exact=False):
         """Return an SA expression to filter against the search query.
