@@ -4,6 +4,17 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Allowed base query sources to work with non-string searches by only applying
+  the lower() function for queries to strings.  We can add additional types of
+  comparison function later if required.
+  [David]
+- Changed Activities table source to have an integer column as the app_id
+  [David]
+- Allowed the overriding of reflection-mapped Columns within SQLAlcehmy
+  tables within our util methods.  You can pass any number of Column objects
+  into the Table() initialisation and have them override an autoload table
+  (very useful!).
+  [David]
 - Changed query source base to allow us to sneak in and get the SQLAlchemy
   query before it returns any wrapped results.  We can now get the query
   and raw results for use within RIF-CS.

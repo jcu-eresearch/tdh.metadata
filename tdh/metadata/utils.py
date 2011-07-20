@@ -45,12 +45,22 @@ def processDatabaseConnections(zope_config):
 
 def createAndRegisterSAMapper(db_connector, table_name, db_schema,
                               table_name_absolute, mapper_class,
-                              primary_keys=[]):
-    """Open up our connection to a table in a database and do it early"""
+                              column_overrides=[], primary_keys=[]):
+    """Open up our connection to a table in a database and do it early.
+
+    Specify your primary keys in a list in the primary_keys argument (column
+    IDs only.
+
+    You can override column definitions in the SQLAlchemy autoload
+    by specifying Column() objects in a list as the column_overrides argument.
+    These get passed into the table creator as the "override" technique.
+    See http://www.sqlalchemy.org/docs/core/schema.html#overriding-reflected-columns for more info.
+    """
     sa_wrapper = getSAWrapper(db_connector)
     table = Table(table_name,
                   sa_wrapper.metadata,
                   schema=db_schema,
+                  *column_overrides,
                   autoload=True)
     resolved_pks = [table.c.get(key) for key in primary_keys]
     mapper_ = mapper(mapper_class,
