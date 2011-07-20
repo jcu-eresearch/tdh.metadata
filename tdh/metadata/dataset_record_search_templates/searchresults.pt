@@ -9,7 +9,10 @@
         
         <h1 class="documentFirstHeading" tal:content="view/label | nothing" />
         
-        <p>Advanced metadata search </p>
+        <p>Advanced metadata search results </p>
+        <dl tal:repeat="datum view/getData">
+            <dt tal:content="datum"></dt>
+        </dl>
         
         <div id="content-core">
             <metal:block use-macro="context/@@ploneform-macros/titlelessform" />

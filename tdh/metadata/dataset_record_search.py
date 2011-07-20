@@ -16,6 +16,8 @@ from tdh.metadata import sources
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.data_record_repository import IDataRecordRepository
 
+from Products.CMFCore.utils import getToolByName
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 # Interface class; used to define content-type schema.
 
@@ -206,6 +208,24 @@ class SearchForm(form.SchemaForm):
     label = _(u"Search the Repository")
     description = _(u"Complex searching")
 
+    def render(self):
+        data, errors = self.extractData()
+        print "In the render function"
+        if errors:
+            print "have errors"
+            self.status = self.formErrorsMessage
+        if data is None: 
+            print "no data"
+            return super(SearchForm,self).render()
+        else: 
+            print "have some data"
+            view = ViewPageTemplateFile("dataset_record_search_templates/searchresults.pt")
+            return view(self)
+
+    def getData(self):
+        data, errors = self.extractData()
+        return data
+
     def update(self):
         # disable Plone's editable border
         self.request.set('disable_border', True)
@@ -221,6 +241,7 @@ class SearchForm(form.SchemaForm):
             return
         
         # handle search here. For now just print search fields to console.
+
 
         print u"Search parameters:"
         print u" Title: ", data['title']
@@ -240,7 +261,20 @@ class SearchForm(form.SchemaForm):
         print u" Nationally significant: ", data['nationally_significant']
         print u" Dataset available: ", data['dataset_available']
 
-        contextURL = self.context.absolute_url() + "/@@search-results"
+        catalog = getToolByName(self.context, 'portal_catalog')
+
+        import ipdb; ipdb.set_trace()
+        results = catalog.searchResults(
+            portal_type='tdh.metadata.datasetrecord',
+            access_restrictions=data['access_restrictions'],
+#            related_parties={
+#                'query':data['related_parties'],
+#                'operator': 'or'
+#            }
+        )
+        print results
+
+        contextURL = self.context.absolute_url() + "/@@search-repository"
         self.request.response.redirect(contextURL)
 
 

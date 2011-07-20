@@ -9,18 +9,29 @@ from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from plone.directives import dexterity, form
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
         AutocompleteFieldWidget
+
 from plone.namedfile.field import NamedBlobFile
 from plone.uuid.interfaces import IUUID
 
 from collective.z3cform.mapwidget.widget import MapFieldWidget
 from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
+from collective.z3cform.datagridfield.interfaces import IDataGridField
 
 import jpype
+
+from DateTime import DateTime
+from plone.indexer import indexer
+
+from collective import dexteritytextindexer
+from plone.autoform.interfaces import IFormFieldProvider
 
 from tdh.metadata import config, interfaces, sources, widgets, validation, \
         vocabularies
 from tdh.metadata import MessageFactory as _
 
+from collective.dexteritytextindexer.converters import DefaultDexterityTextIndexFieldConverter
+from plone.dexterity.interfaces import IDexterityContent
+from z3c.form.interfaces import IWidget
 
 class IParty(Interface):
     relationship = schema.Choice(
@@ -94,11 +105,13 @@ class IDatasetRecord(form.Schema):
 
 
     #Default fieldset
+    dexteritytextindexer.searchable('title')
     title = schema.TextLine(
         title=_(u"Data Record Title"),
         required=True,
     )
 
+    dexteritytextindexer.searchable('descriptions')
     form.widget(descriptions=DataGridFieldFactory)
     descriptions = schema.List(
         title=_(u"Descriptions"),
@@ -275,7 +288,11 @@ class IDatasetRecord(form.Schema):
     form.widget(for_codes=widgets.ForCodeDataGridFieldFactory)
     for_codes = schema.List(
       title=_(u"Fields of Research"),
-      description=_(u"Select or enter up to three (3) separate Fields of Research (FoR) from the drop-down menus, and click the 'Add' button. Specify how relevant each field is to your research, ensuring relevance percentages total to exactly 100%."),
+      description=_(u"Select or enter up to three (3) separate Fields of \
+                    Research (FoR) from the drop-down menus, and click the \
+                    'Add' button. Specify how relevant each field is to your \
+                    research, ensuring relevance percentages total to \
+                    exactly 100%."),
       value_type=DictRow(
           title=_(u"FoR Code"),
           schema=IResearchCode,
@@ -309,6 +326,7 @@ class IDatasetRecord(form.Schema):
       ),
     )
 
+    dexteritytextindexer.searchable('keywords')
     form.widget(keywords=AutocompleteMultiFieldWidget)
     keywords = schema.List(
       title=_(u"Keywords"),
@@ -393,8 +411,62 @@ class IDatasetRecord(form.Schema):
       required = False,
     )
 
+alsoProvides(IDatasetRecord, IFormFieldProvider)
+    
+# Indexers
+@indexer(IDatasetRecord)
+def descriptionIndexer(obj):
+    if obj.descriptions is None:
+        return None
+    description_text = []
+    for descript in obj.descriptions:
+        description_text.append(descript['value'])
+    return ' '.join(description_text)
+grok.global_adapter(descriptionIndexer, name="Description")
 
+@indexer(IDatasetRecord)
+def keywordsIndexer(obj):
+    keywords_list = []
+    if obj.seo_codes is not None:
+        for seo_code in obj.seo_codes:
+            keywords_list.append(seo_code['code'])
+    if obj.for_codes is not None:
+        for for_code in obj.for_codes:
+            keywords_list.append(for_code['code'])
+    if obj.research_themes is not None:
+        keywords_list += obj.research_themes
+    if obj.keywords is not None:
+        keywords_list += obj.keywords
+    if keywords_list is None: return None
+    return tuple(keywords_list)
+grok.global_adapter(keywordsIndexer, name="Subject")
 
+@indexer(IDatasetRecord)
+def accessRestrictionsIndexer(obj):
+    if obj.access_restrictions is None:
+        return None
+    return obj.access_restrictions
+grok.global_adapter(accessRestrictionsIndexer, name="access_restrictions")
+
+@indexer(IDatasetRecord)
+def temporalCoverageStartIndexer(obj):
+    return DateTime(obj.temporal_coverage_start.isoformat())
+grok.global_adapter(temporalCoverageStartIndexer, name="temporal_coverage_start")
+
+@indexer(IDatasetRecord)
+def temporalCoverageEndIndexer(obj):
+    return DateTime(obj.temporal_coverage_end.isoformat())
+grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
+
+@indexer(IDatasetRecord)
+def relatedPartiesIndexer(obj):
+    if obj.related_parties is None:
+        return None
+    uid_list = []
+    for party in obj.related_parties:
+        uid_list.append(party['user_uid'])
+    return tuple(uid_list)
+grok.global_adapter(relatedPartiesIndexer, name="related_parties")
 
 # Custom content-type class; objects created for this content type will
 # be instances of this class. Use this class to add content-type specific
@@ -486,8 +558,6 @@ class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
     grok.context(IDatasetRecord)
     grok.template('addform')
     form.wrap()
-
-
 
 
 # View class
@@ -894,3 +964,37 @@ class RifcsView(grok.View):
 #        required=True,
 #        vocabulary=u"plone.principalsource.Users",
 #    )
+
+import ipdb
+
+class DescriptionsFieldConverter(DefaultDexterityTextIndexFieldConverter):
+    grok.adapts(IDexterityContent, IDataGridField, IWidget)
+
+    def convert(self):
+         # implement your custom converter
+         # which returns a string at the end
+         ipdb.set_trace()
+         for item in self.context.descriptions: 
+             str_list.append(item['value'])
+             list_str = ' '.join(str_list)
+         return list_str
+
+class ListFieldConverter(DefaultDexterityTextIndexFieldConverter):
+    grok.adapts(IDexterityContent, schema.interfaces.IList, IWidget)
+
+    def convert(self):
+         # implement your custom converter
+         # which returns a string at the end
+         str_list = []
+         if self.widget.name == 'descriptions': 
+             for item in self.context.descriptions: 
+                 str_list.append(item['value'])
+         elif self.widget.name == 'keywords':
+             for item in self.context.keywords:
+                 str_list.append(item)
+         list_str = ' '.join(str_list)
+         print "converted text: ", list_str
+
+         return list_str
+
+
