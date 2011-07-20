@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Improvements to RIF-CS renderer, including using specific JCU keys for
+  objects and providing test environment for validating RIF-CS output
+  [David]
 - Allowed base query sources to work with non-string searches by only applying
   the lower() function for queries to strings.  We can add additional types of
   comparison function later if required.
