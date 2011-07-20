@@ -1,4 +1,5 @@
 
+from sqlalchemy import Column, Integer
 from zope.schema.vocabulary import SimpleTerm
 from z3c.sqlalchemy.mapper import MappedClassBase
 
@@ -18,15 +19,15 @@ utils.createAndRegisterSAMapper(
     db_schema=TABLE_DB_CONNECTION['db-schema'],
     table_name_absolute=TABLE_NAME_ABSOLUTE,
     mapper_class=Activity,
+    column_overrides=[Column('app_id', Integer)],
     primary_keys=['app_id']
 )
 
 class ActivitiesQuerySource(BaseQuerySource):
-
     """Source customising display of term titles for research activities."""
 
     def formatResult(self, result):
-        value = token = str(int(getattr(result, self.value_field)))
+        value = token = getattr(result, self.value_field)
         title = "%(short_title)s (%(start_year)s; %(pi)s)" % result.__dict__
         return SimpleTerm(value, token, title)
 

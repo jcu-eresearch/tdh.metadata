@@ -516,6 +516,13 @@ class RifcsView(grok.View):
     user_query_source = sources.UserQuerySourceFactory()
     activities_query_source = sources.ActivitiesQuerySourceFactory()
 
+    def createRegistryObject(self, node, key):
+        registry = node.newRegistryObject()
+        registry.setKey(key)
+        registry.setGroup(config.RIFCS_GROUP)
+        registry.setOriginatingSource(config.RIFCS_ORIGINATING_SOURCE)
+        return registry
+
     def createRelatedObject(self, collection, key, relationship):
         related_object = collection.newRelatedObject()
         related_object.setKey(key)
@@ -594,6 +601,10 @@ class RifcsView(grok.View):
         return self.renderRifcs()
 
     def renderRifcs(self):
+        """
+
+        See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
+        """
         rifcs_xml = ''
 
         #Sanity check before we start using JPype
@@ -607,20 +618,15 @@ class RifcsView(grok.View):
 
             metadata_wrapper = org.ands.rifcs.base.RIFCSWrapper()
             rifcs = metadata_wrapper.getRIFCSObject()
-            registry = rifcs.newRegistryObject()
 
-            registry.setKey(self.context.id)
-            registry.setGroup('JCU')
-            registry.setOriginatingSource('http://www.jcu.edu.au')
+            collection_key = config.RIFCS_KEY % dict(type='collection',
+                                                     id=self.context.id)
+            registry = self.createRegistryObject(rifcs, collection_key)
 
             collection = registry.newCollection()
             collection.setType(self.context.collection_type)
-            #XXX Need to select suitable identifiers here
-            #See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
             collection_identifier = \
-                    self.createIdentifier(collection,
-                                          "jcu.edu.au/%s" % self.context.id,
-                                          'local')
+                    self.createIdentifier(collection, collection_key, 'local')
             collection.addIdentifier(collection_identifier)
 
             collection_names = [
@@ -672,7 +678,8 @@ class RifcsView(grok.View):
 
                 #This should always be here unless something's gone very wrong
                 if user_record:
-                    user_record_id = 'jcu.edu.au/%s' % user_record.uuid
+                    user_record_id = config.RIFCS_KEY % \
+                            dict(type='party', id=user_record.uuid)
                     related_party = self.createRelatedObject(
                         collection=collection,
                         key=user_record_id,
@@ -681,7 +688,10 @@ class RifcsView(grok.View):
                     collection.addRelatedObject(related_party)
 
                 #Prepare our party object for RIF-CS at the same time
-                rifcs_party = registry.newParty()
+                rifcs_party_registry = self.createRegistryObject(rifcs,
+                                                                 user_record_id)
+                rifcs_party = rifcs_party_registry.newParty()
+                rifcs_party.setType('person')
 
                 #XXX Need to clarify whether this identifier is okay
                 rifcs_party_id = self.createIdentifier(rifcs_party, 'local',
@@ -713,7 +723,8 @@ class RifcsView(grok.View):
                 rifcs_party_location.addAddress(rifcs_party_address)
                 rifcs_party.addLocation(rifcs_party_location)
 
-                registry.addParty(rifcs_party)
+                rifcs_party_registry.addParty(rifcs_party)
+                rifcs.addRegistryObject(rifcs_party_registry)
 
             #relatedObject - related activities
             for activity in self.context.related_activities:
@@ -727,8 +738,8 @@ class RifcsView(grok.View):
                 #This should always be here unless something's gone missing
                 #from the database
                 if activity_record:
-                    activity_record_id = 'jcu.edu.au/%s' % \
-                            activity_record.app_id
+                    activity_record_id = config.RIFCS_KEY % \
+                            dict(type='activity', id=activity_record.app_id)
                     related_activity = self.createRelatedObject(
                         collection=collection,
                         key=activity_record_id,
@@ -736,7 +747,9 @@ class RifcsView(grok.View):
                     )
                     collection.addRelatedObject(related_activity)
 
-                    rifcs_activity = registry.newActivity()
+                    rifcs_activity_registry = self.createRegistryObject(
+                        rifcs, activity_record_id)
+                    rifcs_activity = rifcs_activity_registry.newActivity()
                     rifcs_activity.setType('project')
 
                     rifcs_activity_names = [
@@ -789,7 +802,8 @@ class RifcsView(grok.View):
                     self.addSubjectsToObject(rifcs_activity,
                                              rifcs_activity_keywords)
 
-                    registry.addActivity(rifcs_activity)
+                    rifcs_activity_registry.addActivity(rifcs_activity)
+                    rifcs.addRegistryObject(rifcs_activity_registry)
 
             #Back to handling our collection...
             #subject
@@ -828,21 +842,24 @@ class RifcsView(grok.View):
                 type="dateTo"
             )
 
-            coverage_spatial_text = coverage.newSpatial()
-            coverage_spatial_text.setValue(self.context.spatial_coverage_text)
-            coverage_spatial_text.setType("text")
-            coverage.addSpatial(coverage_spatial_text)
+            if self.context.spatial_coverage_text:
+                coverage_spatial_text = coverage.newSpatial()
+                coverage_spatial_text.setValue(\
+                    self.context.spatial_coverage_text)
+                coverage_spatial_text.setType("text")
+                coverage.addSpatial(coverage_spatial_text)
 
-            from shapely import wkt
-            geometry = wkt.loads(self.context.spatial_coverage_coords)
-            #XXX Need to handle situations with just point or linestring
-            if geometry.type == 'Polygon':
-                coverage_spatial_coords = coverage.newSpatial()
-                coords = geometry.__geo_interface__['coordinates'][0]
-                coords_formatted = ' '.join(['%s,%s' % x for x in coords])
-                coverage_spatial_coords.setValue(coords_formatted)
-                coverage_spatial_coords.setType("kmlPolyCoords")
-                coverage.addSpatial(coverage_spatial_coords)
+            if self.context.spatial_coverage_coords:
+                from shapely import wkt
+                geometry = wkt.loads(self.context.spatial_coverage_coords)
+                #XXX Need to handle situations with just point or linestring
+                if geometry.type == 'Polygon':
+                    coverage_spatial_coords = coverage.newSpatial()
+                    coords = geometry.__geo_interface__['coordinates'][0]
+                    coords_formatted = ' '.join(['%s,%s' % x for x in coords])
+                    coverage_spatial_coords.setValue(coords_formatted)
+                    coverage_spatial_coords.setType("kmlPolyCoords")
+                    coverage.addSpatial(coverage_spatial_coords)
 
             collection.addCoverage(coverage);
 
@@ -858,8 +875,14 @@ class RifcsView(grok.View):
             #Marshall all of our relevant objects into our RIF-CS
             registry.addCollection(collection)
             rifcs.addRegistryObject(registry)
+            if 'val' in self.request.form:
+                print 'Validating...'
+                print metadata_wrapper.validate()
+                print 'Validation finished'
+
             rifcs_xml = metadata_wrapper.toString()
 
+        jpype.detachThreadFromJVM()
         return rifcs_xml
 
 

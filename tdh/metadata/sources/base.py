@@ -76,7 +76,8 @@ class BaseQuerySource(object):
         For getting access to the actual results of the query or the
         query before execution, see the prepareQuery method below.
         """
-        query_string = query_string.lower()
+        if isinstance(query_string, str):
+            query_string = query_string.lower()
 
         query = self.prepareQuery(query_string, fields, exact)
 
@@ -122,11 +123,18 @@ class BaseQuerySource(object):
         By default, our search works by and'ing all fields if the search
         is exact and or'ing all fields if the search is inexact.
         """
+        #Define a comparison function to be applied to our field. If our
+        #query is a string, we go case-insensitive. We might like to add more
+        #types of comparison here later (dates, floats...?)
+        comparison_func = lambda field: field
+        if isinstance(query_string, str):
+            comparison_func = func.lower
+
         if exact:
-            return and_(*[func.lower(getattr(self.mapper_class, field)) \
+            return and_(*[comparison_func(getattr(self.mapper_class, field)) \
                          == query_string for field in fields])
         else:
-            return or_(*[func.lower(getattr(self.mapper_class, field)).\
+            return or_(*[comparison_func(getattr(self.mapper_class, field)).\
                          like('%%%s%%' % query_string) for field in fields])
 
     def formatResult(self, result):
