@@ -17,8 +17,8 @@ from collective.z3cform.datagridfield import DataGridFieldFactory, DictRow
 
 import jpype
 
-from tdh.metadata import config, interfaces, sources, widgets, validation, \
-        vocabularies
+from tdh.metadata import config, interfaces, rifcs_utils, sources, widgets, \
+        validation, vocabularies
 from tdh.metadata import MessageFactory as _
 
 
@@ -516,93 +516,26 @@ class RifcsView(grok.View):
     user_query_source = sources.UserQuerySourceFactory()
     activities_query_source = sources.ActivitiesQuerySourceFactory()
 
-    def createRegistryObject(self, node, key):
-        registry = node.newRegistryObject()
-        registry.setKey(key)
-        registry.setGroup(config.RIFCS_GROUP)
-        registry.setOriginatingSource(config.RIFCS_ORIGINATING_SOURCE)
-        return registry
-
-    def createRelatedObject(self, collection, key, relationship):
-        related_object = collection.newRelatedObject()
-        related_object.setKey(key)
-        related_object.addRelation(relationship, None, None, None)
-        return related_object
-
-    def createIdentifier(self, node, type, value):
-        identifier = node.newIdentifier()
-        identifier.setType(type)
-        identifier.setValue(value)
-        return identifier
-
-    def addDateTimeToCoverage(self, coverage, datetime_instance, type):
-        """Add a temporal element to a Coverage object.
-
-        Expects datetime_instance as a datetime object or something else
-        with an isoformat() function available to produce dates and/or times
-        in ISO 8601 format.  See http://www.w3.org/TR/NOTE-datetime for more
-        information or just search the web for ISO 8601.
-        """
-        coverage.addTemporalDate(datetime_instance.isoformat(),
-                                 type,
-                                 "W3CDTF")
-
-    def addDescriptionsToObject(self, node, values):
-        """This function expects a list of dicts to create descriptions for.
-
-        The format should be like this [{'type': 'brief', 'value': 'Foobar'}].
-        """
-        for description in values:
-            type = description['type']
-            value = description['value']
-            if value:
-                description_created = node.newDescription()
-                description_created.setType(type)
-                description_created.setValue(value)
-                node.addDescription(description_created)
-
-    def addNamesToObject(self, node, values):
-        """This function expects a list of dicts to create names for.
-
-        The format should be like this [{'type': 'primary', 'value': 'Foobar'}].
-        """
-        for name in values:
-            type = name['type']
-            value = name['value']
-            if value:
-                name_created = node.newName()
-                name_created.setType(type)
-                name_created.addNamePart(jpype.JString(value), None)
-                node.addName(name_created)
-
-    def addSubjectsToObject(self, node, values):
-        """This function expects a list of dicts to create subjects for.
-
-        The format should be like this [{'type': 'local', 'value': 'Foobar'}].
-        """
-        for subject_wrapper in values:
-            type = subject_wrapper['type']
-            subjects = subject_wrapper['value']
-            for subject in subjects:
-                #If we have a dict, we have a wrapped keyword/subject
-                if isinstance(subject, dict):
-                    subject = subject['code']
-
-                subject_new = node.newSubject()
-                subject_new.setType(type)
-                subject_new.setValue(subject)
-                node.addSubject(subject_new)
-
     def render(self):
-#       filename = '%s.xml' % self.context.id
         self.request.response.setHeader('Content-Type', 'application/xml')
-#        self.request.response.setHeader('Content-Disposition', \
-#'attachment; filename="%s"' % filename)
+
+        if 'download' in self.request.form:
+            filename = '%s.xml' % self.context.id
+            self.request.response.setHeader(
+                'Content-Disposition',
+                'attachment; filename="%s"' % filename)
+
         return self.renderRifcs()
 
-    def renderRifcs(self):
-        """
 
+    def renderRifcs(self, self_contained=True):
+        """Render an XML RIF-CS document for our dataset record.
+
+        Use the `self_contained` argument to specify whether we should
+        include supporting records for our Party and Activty objects.
+
+        We use JPype to communicate with our underlying Java instance so
+        we can take advantage of the ANDS RIF-CS library.
         See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
         """
         rifcs_xml = ''
@@ -621,19 +554,19 @@ class RifcsView(grok.View):
 
             collection_key = config.RIFCS_KEY % dict(type='collection',
                                                      id=self.context.id)
-            registry = self.createRegistryObject(rifcs, collection_key)
+            registry = rifcs_utils.createRegistryObject(rifcs, collection_key)
 
             collection = registry.newCollection()
             collection.setType(self.context.collection_type)
-            collection_identifier = \
-                    self.createIdentifier(collection, collection_key, 'local')
+            collection_identifier = rifcs_utils.createIdentifier(
+                collection, 'local', self.context.id)
             collection.addIdentifier(collection_identifier)
 
             collection_names = [
                 {'type': 'primary',
                  'value': self.context.title},
             ]
-            self.addNamesToObject(collection, collection_names)
+            rifcs_utils.addNamesToObject(collection, collection_names)
 
             #location -- all address types are not RIF-CS standard at present
             locations = self.context.locations + [
@@ -680,51 +613,20 @@ class RifcsView(grok.View):
                 if user_record:
                     user_record_id = config.RIFCS_KEY % \
                             dict(type='party', id=user_record.uuid)
-                    related_party = self.createRelatedObject(
-                        collection=collection,
+                    related_party = rifcs_utils.createRelatedObject(
+                        node=collection,
                         key=user_record_id,
                         relationship=party['relationship']
                     )
                     collection.addRelatedObject(related_party)
 
                 #Prepare our party object for RIF-CS at the same time
-                rifcs_party_registry = self.createRegistryObject(rifcs,
-                                                                 user_record_id)
-                rifcs_party = rifcs_party_registry.newParty()
-                rifcs_party.setType('person')
-
-                #XXX Need to clarify whether this identifier is okay
-                rifcs_party_id = self.createIdentifier(rifcs_party, 'local',
-                                                       user_record_id)
-                rifcs_party.addIdentifier(rifcs_party_id)
-
-                #Prepare the name for our party
-                rifcs_party_name = rifcs_party.newName()
-                rifcs_party_name.setType('primary')
-                rifcs_party_name_parts = {'title': user_record.salutation,
-                                          'given': user_record.given_name,
-                                          'family': user_record.surname,
-                                         }
-
-                for part in rifcs_party_name_parts:
-                    rifcs_party_name.addNamePart(rifcs_party_name_parts[part],
-                                                 part)
-                rifcs_party.addName(rifcs_party_name)
-
-                #Prepare the party's electronic address
-                rifcs_party_location = rifcs_party.newLocation()
-                rifcs_party_address = rifcs_party_location.newAddress()
-                rifcs_party_address_electronic = \
-                        rifcs_party_address.newElectronic()
-                rifcs_party_address_electronic.setValue(user_record.email_alias)
-                rifcs_party_address_electronic.setType('email')
-                rifcs_party_address.addElectronic(\
-                    rifcs_party_address_electronic)
-                rifcs_party_location.addAddress(rifcs_party_address)
-                rifcs_party.addLocation(rifcs_party_location)
-
-                rifcs_party_registry.addParty(rifcs_party)
-                rifcs.addRegistryObject(rifcs_party_registry)
+                if self_contained:
+                    rifcs.addRegistryObject(\
+                        rifcs_utils.createPartyAndRegistry(rifcs,
+                                                           user_record_id,
+                                                           user_record)
+                                           )
 
             #relatedObject - related activities
             for activity in self.context.related_activities:
@@ -740,70 +642,18 @@ class RifcsView(grok.View):
                 if activity_record:
                     activity_record_id = config.RIFCS_KEY % \
                             dict(type='activity', id=activity_record.app_id)
-                    related_activity = self.createRelatedObject(
-                        collection=collection,
+                    related_activity = rifcs_utils.createRelatedObject(
+                        node=collection,
                         key=activity_record_id,
                         relationship='isOutputOf'
                     )
                     collection.addRelatedObject(related_activity)
 
-                    rifcs_activity_registry = self.createRegistryObject(
-                        rifcs, activity_record_id)
-                    rifcs_activity = rifcs_activity_registry.newActivity()
-                    rifcs_activity.setType('project')
-
-                    rifcs_activity_names = [
-                        {'type': 'primary',
-                         'value': activity_record.title},
-                        {'type': 'abbreviated',
-                         'value': activity_record.short_title},
-                    ]
-
-                    rifcs_activity_record_note = \
-                            config.RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE % \
-                            activity_record.__dict__
-
-                    activity_descriptions = [
-                        {'type': 'brief',
-                         'value': activity_record.summary},
-                        {'type': 'note',
-                         'value': rifcs_activity_record_note}
-                    ]
-                    self.addDescriptionsToObject(rifcs_activity,
-                                                 activity_descriptions)
-
-                    rifcs_activity_coverage = rifcs_activity.newCoverage()
-                    self.addDateTimeToCoverage(
-                        coverage=rifcs_activity_coverage,
-                        datetime_instance=\
-                            datetime.strptime(activity_record.start_year,
-                                              '%Y'),
-                        type="dateFrom"
-                    )
-                    rifcs_activity.addCoverage(rifcs_activity_coverage)
-
-                    #Create our flexible keyword sources. It doesn't matter
-                    #here if any of our values are empty because we'll check
-                    #them.
-                    keyword_sources = {
-                        'anzrc-for': activity_record.for_codes,
-                        'anzrc-seo': activity_record.seo_codes,
-                        'local': activity_record.keywords
-                    }
-                    rifcs_activity_keywords = []
-                    for type in keyword_sources:
-                        keywords = keyword_sources[type]
-                        if keywords:
-                            value = {'type': type,
-                                     'value': keywords.split(', ')
-                                    }
-                            rifcs_activity_keywords.append(value)
-
-                    self.addSubjectsToObject(rifcs_activity,
-                                             rifcs_activity_keywords)
-
-                    rifcs_activity_registry.addActivity(rifcs_activity)
-                    rifcs.addRegistryObject(rifcs_activity_registry)
+                    if self_contained:
+                        rifcs.addRegistryObject(
+                            rifcs_utils.createActivityAndRegistry(
+                                rifcs, activity_record_id, activity_record)
+                        )
 
             #Back to handling our collection...
             #subject
@@ -817,7 +667,7 @@ class RifcsView(grok.View):
                 {'type': 'local',
                  'value': [self.context.data_type,]},
             ]
-            self.addSubjectsToObject(collection, keyword_types)
+            rifcs_utils.addSubjectsToObject(collection, keyword_types)
 
             #description
             descriptions = self.context.descriptions + [
@@ -826,17 +676,16 @@ class RifcsView(grok.View):
                 {'type': 'rights',
                  'value': self.context.legal_rights},
             ]
-
-            self.addDescriptionsToObject(collection, descriptions)
+            rifcs_utils.addDescriptionsToObject(collection, descriptions)
 
             #coverage
             coverage = collection.newCoverage()
-            self.addDateTimeToCoverage(
+            rifcs_utils.addDateTimeToCoverage(
                 coverage,
                 datetime_instance=self.context.temporal_coverage_start,
                 type="dateFrom"
             )
-            self.addDateTimeToCoverage(
+            rifcs_utils.addDateTimeToCoverage(
                 coverage,
                 datetime_instance=self.context.temporal_coverage_end,
                 type="dateTo"
@@ -875,10 +724,10 @@ class RifcsView(grok.View):
             #Marshall all of our relevant objects into our RIF-CS
             registry.addCollection(collection)
             rifcs.addRegistryObject(registry)
+            #Validate if we would like to check this
             if 'val' in self.request.form:
-                print 'Validating...'
-                print metadata_wrapper.validate()
-                print 'Validation finished'
+                metadata_wrapper.validate()
+                return
 
             rifcs_xml = metadata_wrapper.toString()
 
@@ -886,11 +735,3 @@ class RifcsView(grok.View):
         return rifcs_xml
 
 
-
-#    form.widget(smarties=AutocompleteFieldWidget)
-#    smarties = schema.Choice(
-#        title=_(u"User ID"),
-#        description=_(u"Enter your JCU user ID. This field auto-completes."),
-#        required=True,
-#        vocabulary=u"plone.principalsource.Users",
-#    )

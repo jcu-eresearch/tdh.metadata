@@ -4,6 +4,10 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Allow download of RIF-CS by using ?download at the end of a RIF-CS URL.
+  [David]
+- Refactor lots of RIF-CS code in preparation for working with jOAI provider
+  [David]
 - Improvements to RIF-CS renderer, including using specific JCU keys for
   objects and providing test environment for validating RIF-CS output
   [David]
