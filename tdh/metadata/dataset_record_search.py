@@ -1,6 +1,6 @@
 # file: dataset_record_search.py
 # author: marianne brown
-# 
+#
 # creates a form for the search interface for the data record repository
 #
 from five import grok
@@ -23,9 +23,9 @@ from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 
 class IDatasetRecordSearch(form.Schema):
     """
-    A form to search the dataset records. 
-    
-    Not all sections in the dataset record are searchable - just the ones that 
+    A form to search the dataset records.
+
+    Not all sections in the dataset record are searchable - just the ones that
     we think __make sense__.
     """
 
@@ -167,7 +167,7 @@ class IDatasetRecordSearch(form.Schema):
         description=_(u"Select which licence types are to be included in the \
                       search. Use Ctrl-click to select more than one option"),
         required=False,
-        value_type=schema.Choice( 
+        value_type=schema.Choice(
             values = [
                 "No Licence",
                 "Creative Commons - Attribution alone (by)",
@@ -214,10 +214,10 @@ class SearchForm(form.SchemaForm):
         if errors:
             print "have errors"
             self.status = self.formErrorsMessage
-        if data is None: 
+        if data is None:
             print "no data"
             return super(SearchForm,self).render()
-        else: 
+        else:
             print "have some data"
             view = ViewPageTemplateFile("dataset_record_search_templates/searchresults.pt")
             return view(self)
@@ -239,7 +239,7 @@ class SearchForm(form.SchemaForm):
         if errors:
             self.status = self.formErrorsMessage
             return
-        
+
         # handle search here. For now just print search fields to console.
 
 
@@ -263,7 +263,7 @@ class SearchForm(form.SchemaForm):
 
         catalog = getToolByName(self.context, 'portal_catalog')
 
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
         results = catalog.searchResults(
             portal_type='tdh.metadata.datasetrecord',
             access_restrictions=data['access_restrictions'],

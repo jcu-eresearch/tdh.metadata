@@ -70,7 +70,7 @@ class DataRecordRepositoryView(grok.View):
         catalog = getToolByName(context, 'portal_catalog')
         num_items = 5
         return catalog(Type = 'Dataset Record',
-                sort_on = 'modified', 
+                sort_on = 'modified',
                 sort_order = 'reverse',
                 sort_limit = num_items)[:num_items]
 
@@ -83,5 +83,5 @@ class DataRecordRepositoryView(grok.View):
 class DataRecordRepositorySearchView(grok.View):
     grok.context(IDataRecordRepository)
     grok.require('zope2.View')
-    grok.template('search_form')
+    grok.template('search')
     grok.name('search_form')
