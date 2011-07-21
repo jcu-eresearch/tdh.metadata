@@ -55,6 +55,36 @@ div.dataset-section {
     margin-left: -3ex;
 }
 
+body.template-view.portaltype-tdh-metadata-datasetrecord table.datagridwidget-table-view th.header span.required {
+    display: none
+}
+
+input#form-widgets-related_activities-widgets-query {
+    width: 60ex;
+}
+
+.dataset-section table.datagridwidget-table-view {
+    border: none;
+    background: transparent;
+}
+.dataset-section table.datagridwidget-table-view thead {
+    display: none;
+}
+
+.dataset-section td.datagridwidget-cell span.choice-field {
+    font-weight: bold;
+}
+.dataset-section td.datagridwidget-cell span.choice-field:after {
+    content: ": "
+}
+.dataset-section td.datagridwidget-cell { 
+    vertical-align: top; 
+    padding-right: 1em; 
+    padding-bottom: 1em;
+}
+
+
+
 /* jcu theme specific coloring */
 #content-core dt a {
     color: #205C90;

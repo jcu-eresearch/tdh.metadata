@@ -39,6 +39,7 @@ setup(name='tdh.metadata',
           'Products.SQLAlchemyDA',
           'JPype',
           'shapely',
+          'collective.dexteritytextindexer',
           # -*- Extra requirements: -*-
       ],
       entry_points="""

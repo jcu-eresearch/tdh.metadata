@@ -1,3 +1,4 @@
+<tal:block tal:define="foo python:request.set('disable_plone.leftcolumn',0)"/>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
       xmlns:tal="http://xml.zope.org/namespaces/tal"
       xmlns:metal="http://xml.zope.org/namespaces/metal"
@@ -17,6 +18,7 @@
   <div id="dataset-description-text" class="dataset-section">
       <h3>Description</h3>
       <div tal:condition="here/descriptions" tal:content="structure view/w/descriptions/render"></div>
+      <p> This collection consists of <span tal:replace="context/data_type"></span>.</p>
   </div>
   <div id="dataset-logo" >
   </div>
@@ -77,7 +79,6 @@
   <!-- About the data -->
   <div class="dataset-section">
       <h3>About the data</h3>
-      <p> This collection consists of <span tal:replace="context/data_type"></span>.</p>
       <p><b>Suggested retention period:</b> <span tal:replace="here/retention_period"></span>.<br />
       <b>Nationally significant collection?</b> <span tal:replace="here/nationally_significant"></span></p>
   </div>

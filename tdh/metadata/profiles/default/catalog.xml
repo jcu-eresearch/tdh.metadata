@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<object name="portal_catalog">
+    <index name="related_parties" meta_type="KeywordIndex">
+        <indexed_attr value="related_parties" />
+    </index>
+    <index name="access_restrictions" meta_type="FieldIndex">
+        <indexed_attr value="access_restrictions"/>
+    </index>
+    <index name="temporal_coverage_start" meta_type="DateIndex">
+        <property name="index_naive_time_as_local">True</property>
+    </index>
+    <index name="temporal_coverage_end" meta_type="DateIndex">
+        <property name="index_naive_time_as_local">True</property>
+    </index>
+    <index name="temporal_coverage" meta_type="DateRangeIndex"
+        since_field="temporal_coverage_start" 
+        until_field="temporal_coverage_end" />
+    <column value="related_parties"/>
+    <column value="access_restrictions"/>
+    <column value="temporal_coverage_start"/>
+    <column value="temporal_coverage_end"/>
+    <column value="temporal_coverage"/>
+</object>

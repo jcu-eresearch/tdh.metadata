@@ -22,6 +22,7 @@
      <element value="plone.app.referenceablebehavior.referenceable.IReferenceable"/>
      <element value="plone.app.stagingbehavior.interfaces.IStagingSupport"/>
      <element value="plone.app.versioningbehavior.behaviors.IVersionable" />
+     <element value="collective.dexteritytextindexer.behavior.IDexterityTextIndexer" />
    </property>
 
   <!-- View information -->
