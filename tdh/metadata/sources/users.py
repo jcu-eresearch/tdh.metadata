@@ -40,7 +40,6 @@ class UserQuerySource(BaseQuerySource):
         if not exact:
             criteria = or_(*[criteria, func.lower(self.mapper_class.given_name+' '+self.mapper_class.surname).like('%%%s%%' % query_string)])
 
-
         return criteria
 
     def formatResult(self, result):
