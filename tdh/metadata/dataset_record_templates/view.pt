@@ -12,7 +12,7 @@
   <metal:content-core define-macro="content-core">
 
   <blockquote class="pullquote">
-    <a href="@@rifcs" tal:attributes="href string:${here/absolute_url}/@@rifcs"
+    <a href="@@rifcs" tal:attributes="href string:${here/absolute_url}/@@rifcs?download"
       title="Download RIF-CS">Download RIF-CS</a><br />
     <a href="@@rifcs" 
       tal:attributes="href string:${here/absolute_url}/@@rifcs?val"
