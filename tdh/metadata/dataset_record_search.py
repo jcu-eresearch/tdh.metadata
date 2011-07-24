@@ -29,18 +29,18 @@ class IDatasetRecordSearch(form.Schema):
     we think __make sense__.
     """
 
-    title = schema.TextLine(
+    Title = schema.TextLine(
         title=_(u"Data Record Title"),
         required=False,
     )
 
-    description = schema.TextLine(
+    Description = schema.TextLine(
         title=_(u"Description"),
         description=_(u"Enter phase to search for in the description fields"),
         required=False,
     )
 
-    keywords = schema.TextLine(
+    Subject = schema.TextLine(
       title=_(u"Keywords"),
       description=_(u"Enter keywords that you are searching for, \
                     separated with AND or OR as appropriate"),
@@ -63,8 +63,7 @@ class IDatasetRecordSearch(form.Schema):
     form.widget(related_activities=AutocompleteMultiFieldWidget)
     related_activities = schema.List(
         title=_(u"Related Activities"),
-        description=_(u"Enter details of which activities are associated \
-                      with this record."),
+        description=_(u"Enter the name of the activity you are interesed in"),
         value_type=schema.Choice(
             title=_(u"Activity"),
             source=sources.ActivitiesQuerySourceFactory(),
@@ -73,7 +72,7 @@ class IDatasetRecordSearch(form.Schema):
         required=False,
     )
 
-    contributors = schema.Text(
+    coinvestigators = schema.Text(
         title=_(u"Co-investigators and other contributors"),
         description=_(u"Enter details about other entities that you have \
                       collaborated with. Use this field only for non-JCU \
@@ -81,13 +80,13 @@ class IDatasetRecordSearch(form.Schema):
         required=False,
     )
 
-    start_date = schema.Date(
+    temporal_coverage_start = schema.Date(
         title=_(u"Research Start Date"),
         description=_(u"Enter the start date of search range"),
         required = False,
     )
 
-    end_date = schema.Date(
+    temporal_coverage_end = schema.Date(
       title=_(u"Research End Date"),
       description=_(u"Enter the end date of search range"),
       required = False,
@@ -200,6 +199,7 @@ class IDatasetRecordSearch(form.Schema):
 class SearchForm(form.SchemaForm):
     grok.name('search-repository')
     grok.require('zope2.View')
+    #grok.template('searchresult.pt')
     grok.context(IDataRecordRepository)
 
     schema = IDatasetRecordSearch
@@ -209,22 +209,15 @@ class SearchForm(form.SchemaForm):
     description = _(u"Complex searching")
 
     def render(self):
-        data, errors = self.extractData()
-        print "In the render function"
-        if errors:
-            print "have errors"
-            self.status = self.formErrorsMessage
-        if data is None:
-            print "no data"
-            return super(SearchForm,self).render()
-        else:
-            print "have some data"
-            view = ViewPageTemplateFile("dataset_record_search_templates/searchresults.pt")
-            return view(self)
+         view = ViewPageTemplateFile("dataset_record_search_templates/searchresults.pt")
+         return view(self)
 
     def getData(self):
         data, errors = self.extractData()
         return data
+
+    def hasData(self):
+        return any((self.getData()).values())
 
     def update(self):
         # disable Plone's editable border
@@ -240,43 +233,25 @@ class SearchForm(form.SchemaForm):
             self.status = self.formErrorsMessage
             return
 
-        # handle search here. For now just print search fields to console.
 
-
-        print u"Search parameters:"
-        print u" Title: ", data['title']
-        print u" Description: ", data['description']
-        print u" Keywords: ", data['keywords']
-        print u" Related parties: ", data['related_parties']
-        print u" Related activities: ", data['related_activities']
-        print u" Contributors: ", data['contributors']
-        print u" Start date: ", data['start_date']
-        print u" End date: ", data['end_date']
-        print u" Spatial coverage: ", data['spatial_coverage_text']
-        print u" Access restrictions: ", data['access_restrictions']
-        print u" FoR Codes: ", data['for_codes']
-        print u" SEO Codes: ", data['seo_codes']
-        print u" Research Themes: ", data['research_themes']
-        print u" Licensing: ", data['licensing']
-        print u" Nationally significant: ", data['nationally_significant']
-        print u" Dataset available: ", data['dataset_available']
-
+    def getResults(self, data):
         catalog = getToolByName(self.context, 'portal_catalog')
-
-        #import ipdb; ipdb.set_trace()
-        results = catalog.searchResults(
-            portal_type='tdh.metadata.datasetrecord',
-            access_restrictions=data['access_restrictions'],
-#            related_parties={
-#                'query':data['related_parties'],
-#                'operator': 'or'
-#            }
-        )
-        print results
-
-        contextURL = self.context.absolute_url() + "/@@search-repository"
-        self.request.response.redirect(contextURL)
-
+        keyargs = {'portal_type':'tdh.metadata.datasetrecord'}
+        print "Parameters used on catalog search: "
+        # need to sort out if they are doing a check by dates
+        # if looking for dates then should select any that have
+        # a temporal coverage range that over laps with the range given
+        # here. 
+        if data['temporal_coverage_start'] is not None:
+            print data['temporal_coverage_start']
+        if data['temporal_coverage_end'] is not None:
+            print data['temporal_coverage_end']
+        for k,v in data.items():
+            if v in [ None, False, [] ]:
+                continue
+            print k, " = ", v
+            keyargs[k] = v
+        return catalog.searchResults(keyargs)
 
     @button.buttonAndHandler(_(u"Cancel"))
     def handleCancel(self, action):

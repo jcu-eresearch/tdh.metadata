@@ -5,17 +5,42 @@
       i18n:domain="tdh.metadata"
       metal:use-macro="context/main_template/macros/master">
       
-    <metal:block fill-slot="main">
-        
-        <h1 class="documentFirstHeading" tal:content="view/label | nothing" />
-        
-        <p>Advanced metadata search results </p>
-        <dl tal:repeat="datum view/getData">
-            <dt tal:content="datum"></dt>
-        </dl>
+<metal:block fill-slot="main"
+      tal:define="has_data python: view.hasData();" >
         
         <div id="content-core">
-            <metal:block use-macro="context/@@ploneform-macros/titlelessform" />
+            <div tal:condition="not:has_data">
+                <h1 class="documentFirstHeading" tal:content="view/label | nothing" />
+                <metal:block use-macro="context/@@ploneform-macros/titlelessform" >
+                </metal:block>
+            </div>
+
+            <div tal:condition="has_data"
+                tal:define="data view/getData;
+                keys python:data.keys()">
+                <h1 class="documentFirstHeading">Advanced Data Repository Search </h1>
+                <p><a href="#" tal:attributes="href request/URL">New search</a></p>
+                <dl tal:repeat="key keys" tal:condition="nothing">
+                    <tal:show_key tal:condition="python:data.get(key,None)">
+                    <dt tal:content="key"></dt>
+                    <dd tal:content="python: data.get(key,'')"></dd>
+                    </tal:show_key>
+                </dl>
+                <tal:showresults tal:define="results python:view.getResults(data)">
+                <div tal:condition="results">
+                    <div class="error" tal:content="results"></div>
+                    There are <span tal:replace="python:len(results)"></span> records matching your query.
+                    <dl tal:repeat="result results">
+                        <dt><a href="" tal:attributes="href result/getURL" tal:content="result/Title"></a></dt>
+                        <dd tal:content="result/Description"></dd>
+                    </dl>
+                </div>
+                <div tal:condition="not:results">
+                    No records were found matching your query.
+                </div>
+                </tal:showresults>
+            </div>
+
         </div>
         
     </metal:block>

@@ -3,6 +3,12 @@
     <index name="related_parties" meta_type="KeywordIndex">
         <indexed_attr value="related_parties" />
     </index>
+    <index name="related_activities" meta_type="KeywordIndex">
+        <indexed_attr value="related_activities" />
+    </index>
+    <index name="coinvestigators" meta_type="KeywordIndex">
+        <indexed_attr value="coinvestigators" />
+    </index>
     <index name="access_restrictions" meta_type="FieldIndex">
         <indexed_attr value="access_restrictions"/>
     </index>
@@ -16,6 +22,8 @@
         since_field="temporal_coverage_start" 
         until_field="temporal_coverage_end" />
     <column value="related_parties"/>
+    <column value="related_activities"/>
+    <column value="coinvestigators"/>
     <column value="access_restrictions"/>
     <column value="temporal_coverage_start"/>
     <column value="temporal_coverage_end"/>
