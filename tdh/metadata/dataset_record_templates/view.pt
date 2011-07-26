@@ -19,6 +19,11 @@
       title="Validate RIF-CS">Validate RIF-CS</a><br />
   </blockquote>
   <div class="visualClear"></div>
+  <!-- Actual data -->
+  <div id="dataset-data" class="dataset-section">
+      <h3>Data Download</h3>
+      <div tal:condition="here/dataset_data" tal:content="structure view/w/dataset_data/render">Data</div>
+  </div>
   <!-- Descriptions -->
   <div id="dataset-description-text" class="dataset-section">
       <h3>Description</h3>
