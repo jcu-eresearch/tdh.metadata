@@ -1,6 +1,75 @@
 from datetime import datetime
 import jpype
-from tdh.metadata import config
+from tdh.metadata import config, sources, utils
+
+def objectOrAttribute(object, attribute):
+    """Return either the given object or an objects' attribute, if it exists.
+
+    This is a helpful function for getting a nested attribute, especially in
+    the case of DataGridField stored values, which are nested objects.
+    """
+    return_value = object
+    if attribute and hasattr(object, 'get'):
+        return_value = object.get(attribute)
+    elif attribute and hasattr(object, attribute):
+        return_value = getattr(object, attribute)
+
+    return return_value
+
+def querySource(item, source, query_attr, query_fields, key_type, key_field):
+    """Return a tuple of query record and its RIF-CS identifier.
+
+    This is a convenience method to avoid having to prepare queries and
+    execute them again and again across different locations in our RIF-CS
+    generation.
+    `item` is the value provided from our context for the query.
+    """
+    query_string = objectOrAttribute(item, query_attr)
+    record = source.prepareQuery(query_string, query_fields, exact=True).first()
+
+    #This should always be here unless something's gone very wrong or else
+    #the record is now missing. Since databases aren't under our control,
+    #this is certainly possible.
+    if record:
+        record_id = config.RIFCS_KEY % dict(type=key_type,
+                                            id=getattr(record, key_field))
+        record = (record, record_id)
+    return record
+
+def createRIFCSRegistries(node, attribute, items):
+    """Method that creates and returns a list of generic RIF-CS registries.
+
+    Refer to the RIF_CS_OPTIONS dict for how to specify relevant functions to
+    be called for querying records and creating a RegistryObject.
+    The `attribute` parameter specifies the options dict key
+    The `items` parameter is an iterable source of values to query for
+    """
+    registries = []
+    options = RIF_CS_OPTIONS[attribute]
+    for item in items:
+        record = querySource(item, **options['query_source_options'])
+        if record:
+            registry = options['create_func'](node, record[1], record[0])
+            registries.append(registry)
+    return registries
+
+def createAndAddRelatedObjects(collection, relations, related_attribute,
+                               relationship):
+    """Query, create, and add RelatedObjects to a collection based upon a list.
+    """
+    options = RIF_CS_OPTIONS[related_attribute]
+    for relation in relations:
+        record = querySource(relation, **options['query_source_options'])
+        if record:
+            #Create the RelatedObject and specify the relationship as either
+            #an attribute of the result, or just the passed in string if the
+            #attribute doesn't exist.
+            related_object = createRelatedObject(
+                node=collection,
+                key=record[1],
+                relationship=getattr(record[0], relationship, relationship)
+            )
+        collection.addRelatedObject(related_object)
 
 def createRegistryObject(node, key):
     """Create and return a new RIF-CS RegistryObject against the given node.
@@ -124,8 +193,8 @@ def createActivityAndRegistry(node, id, activity_record):
     #here if any of our values are empty because we'll check
     #them.
     keyword_sources = {
-        'anzrc-for': activity_record.for_codes,
-        'anzrc-seo': activity_record.seo_codes,
+        'anzsrc-for': activity_record.for_codes,
+        'anzsrt-seo': activity_record.seo_codes,
         'local': activity_record.keywords
     }
     rifcs_activity_keywords = []
@@ -141,6 +210,143 @@ def createActivityAndRegistry(node, id, activity_record):
 
     rifcs_activity_registry.addActivity(rifcs_activity)
     return rifcs_activity_registry
+
+def createCollectionAndRegistry(node, context):
+    """Create and return a new RIF-CS RegistryObject with a Collection inside.
+
+    `node` should be a revelant RIF-CS parent element
+    `context` is a DatasetRecord object
+    """
+
+    collection_key = config.RIFCS_KEY % dict(type='collection',
+                                             id=context.id)
+    registry = createRegistryObject(node, collection_key)
+
+    collection = registry.newCollection()
+    collection.setType(context.collection_type)
+    collection_identifier = createIdentifier(
+        collection, 'local', context.id)
+    collection.addIdentifier(collection_identifier)
+
+    collection_names = [
+        {'type': 'primary',
+         'value': context.title},
+    ]
+    addNamesToObject(collection, collection_names)
+
+    #location -- all address types are not RIF-CS standard at present
+    locations = context.locations + [
+        {'type': 'url',
+         'value': context.absolute_url(),
+         'designation': 'Electronic',
+        },
+    ]
+
+    for location in locations:
+        collection_location = collection.newLocation()
+        address = collection_location.newAddress()
+        if location['designation'] == 'Physical':
+            physical_address = address.newPhysical()
+            physical_address.setType('streetAddress')
+            #XXX We need to do some fancy stuff here to make
+            # complete addresses
+            address_part = physical_address.newAddressPart()
+            address_part.setValue(location['value'])
+            address_part.setType(location['type'])
+
+            physical_address.addAddressPart(address_part)
+            address.addPhysical(physical_address)
+
+        elif location['designation'] == 'Electronic':
+            electronic_address = address.newElectronic()
+            electronic_address.setValue(location['value'])
+            electronic_address.setType(location['type'])
+            address.addElectronic(electronic_address)
+
+        #Now add our location to the collection
+        collection_location.addAddress(address)
+        collection.addLocation(collection_location)
+
+    #relatedObject - related parties
+    createAndAddRelatedObjects(collection,
+                               context.related_parties,
+                               'related_parties',
+                               'relationship')
+
+    #relatedObject - related activities
+    createAndAddRelatedObjects(collection,
+                               context.related_activities,
+                               'related_activities',
+                               'isOutputOf')
+
+    #Back to handling our collection...
+    #subject
+    keyword_types = [
+        {'type': 'anzsrc-for',
+         'value': context.for_codes},
+        {'type': 'anzsrt-seo',
+         'value': context.seo_codes},
+        {'type': 'local',
+         'value': context.keywords},
+        {'type': 'local',
+         'value': [context.data_type,]},
+    ]
+    addSubjectsToObject(collection, keyword_types)
+
+    #description
+    descriptions = context.descriptions + [
+        {'type': 'accessRights',
+         'value': context.access_restrictions},
+        {'type': 'rights',
+         'value': context.legal_rights},
+    ]
+    addDescriptionsToObject(collection, descriptions)
+
+    #coverage
+    coverage = collection.newCoverage()
+    addDateTimeToCoverage(
+        coverage,
+        datetime_instance=context.temporal_coverage_start,
+        type="dateFrom"
+    )
+    addDateTimeToCoverage(
+        coverage,
+        datetime_instance=context.temporal_coverage_end,
+        type="dateTo"
+    )
+
+    if context.spatial_coverage_text:
+        coverage_spatial_text = coverage.newSpatial()
+        coverage_spatial_text.setValue(\
+            context.spatial_coverage_text)
+        coverage_spatial_text.setType("text")
+        coverage.addSpatial(coverage_spatial_text)
+
+    if context.spatial_coverage_coords:
+        from shapely import wkt
+        geometry = wkt.loads(context.spatial_coverage_coords)
+        #XXX Need to handle situations with just point or linestring
+        if geometry.type == 'Polygon':
+            coverage_spatial_coords = coverage.newSpatial()
+            coords = geometry.__geo_interface__['coordinates'][0]
+            coords_formatted = ' '.join(['%s,%s' % x for x in coords])
+            coverage_spatial_coords.setValue(coords_formatted)
+            coverage_spatial_coords.setType("kmlPolyCoords")
+            coverage.addSpatial(coverage_spatial_coords)
+
+    collection.addCoverage(coverage);
+
+    #citationInfo - not implemented
+    #relatedInfo - not implemented
+
+    #Extra metadata about the actual record itself
+    collection.setDateAccessioned(\
+        context.creation_date.utcdatetime().isoformat())
+    collection.setDateModified(\
+        context.modification_date.utcdatetime().isoformat())
+
+    registry.addCollection(collection)
+    return registry
 
 def addDateTimeToCoverage(coverage, datetime_instance, type):
     """Add a temporal element to a Coverage object.
@@ -162,7 +368,7 @@ def addDescriptionsToObject(node, values):
     for description in values:
         type = description['type']
         value = description['value']
-        if value:
+        if value and value.strip():
             description_created = node.newDescription()
             description_created.setType(type)
             description_created.setValue(value)
@@ -200,5 +406,91 @@ def addSubjectsToObject(node, values):
             subject_new.setValue(subject)
             node.addSubject(subject_new)
 
+@utils.jpype_utilised
+def renderRifcs(dataset_records, render_collection=True,
+                render_related_attributes=\
+                ['related_parties', 'related_activities'],
+               validate=False):
+    """Render an XML RIF-CS document for our dataset record.
 
+    `dataset_records` is a list of DatasetRecord objects to render RIF-CS for.
+    Use the `self_contained` argument to specify whether we should
+    include supporting records for our Party and Activty objects.
+
+    We use JPype to communicate with our underlying Java instance so
+    we can take advantage of the ANDS RIF-CS library.
+    See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
+    """
+    #We might get a straight object coming in, so wrap it
+    if not isinstance(dataset_records, list):
+        dataset_records = [dataset_records,]
+
+    org = jpype.JPackage('org')
+    metadata_wrapper = org.ands.rifcs.base.RIFCSWrapper()
+    rifcs = metadata_wrapper.getRIFCSObject()
+
+    #Provision a dict for unique related attributes
+    related_attributes = dict((attr, set()) for attr in \
+                              render_related_attributes)
+
+    #Marshall all of our relevant objects into our RIF-CS
+    for context in dataset_records:
+        if render_collection:
+            #Render our collection to our RIF-CS object
+            collection_registry = createCollectionAndRegistry(rifcs, context)
+            rifcs.addRegistryObject(collection_registry)
+
+        for attribute in related_attributes:
+            #Prepare related attributes into Python set() objects so we only
+            #have one instance of each relation.
+            options = RIF_CS_OPTIONS[attribute]
+            query_attr = options['query_source_options']['query_attr']
+
+            #Get our stored value against our object (either list of strings
+            #or list of DGF objects)
+            related_values = getattr(context, attribute)
+            if query_attr:
+                #If we have a specific query attribute, then unwrap the values
+                related_values = [relation[query_attr] for relation in \
+                                  related_values]
+            related_attributes[attribute] |= set(related_values)
+
+    for attribute in related_attributes:
+        rifcs_registries = createRIFCSRegistries(rifcs,
+                                                 attribute,
+                                                 related_attributes[attribute])
+        for registry in rifcs_registries:
+            rifcs.addRegistryObject(registry)
+
+    #Validate if we would like to check this.  Prepare for Java tracebacks
+    #if an error occurs in validation. This frequently happens on account of
+    #the validation code needing to download the entire XSD schema, which
+    #includes downloading (very!) slow resources from W3C. Due to this,
+    #timeouts occur and an error concerning "xml:lang" is experienced. Just
+    #re-do the validation and try again.
+    if validate:
+        metadata_wrapper.validate()
+
+    rifcs_xml = metadata_wrapper.toString()
+    return rifcs_xml
+
+
+#Our generic RIF-CS functions for related objects
+RIF_CS_OPTIONS = \
+        {'related_parties':
+         {'query_source_options': {'source': sources.user_query_source,
+                                   'query_attr': 'user_uid',
+                                   'query_fields': ['login_id'],
+                                   'key_type': 'party',
+                                   'key_field': 'uuid'},
+          'create_func': createPartyAndRegistry
+         },
+         'related_activities': \
+         {'query_source_options': {'source': sources.activities_query_source,
+                                   'query_attr': None,
+                                   'query_fields': ['app_id'],
+                                   'key_type': 'activity',
+                                   'key_field': 'app_id'},
+          'create_func': createActivityAndRegistry},
+        }
 

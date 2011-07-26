@@ -1,4 +1,3 @@
-from datetime import datetime
 from DateTime import DateTime
 
 from five import grok
@@ -27,8 +26,8 @@ from collective.z3cform.datagridfield.interfaces import IDataGridField
 
 import jpype
 
-from tdh.metadata import config, interfaces, rifcs_utils, sources, widgets, \
-        validation, vocabularies
+from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
+        validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
 
 
@@ -575,15 +574,11 @@ class View(dexterity.DisplayForm):
     grok.name('view')
     grok.template('view')
 
-
 class RifcsView(grok.View):
     grok.context(IDatasetRecord)
     grok.require('zope2.View')
     grok.name('rifcs')
 #    grok.template('rifcs')
-
-    user_query_source = sources.UserQuerySourceFactory()
-    activities_query_source = sources.ActivitiesQuerySourceFactory()
 
     def render(self):
         self.request.response.setHeader('Content-Type', 'application/xml')
@@ -594,214 +589,8 @@ class RifcsView(grok.View):
                 'Content-Disposition',
                 'attachment; filename="%s"' % filename)
 
-        return self.renderRifcs()
-
-
-    def renderRifcs(self, self_contained=True):
-        """Render an XML RIF-CS document for our dataset record.
-
-        Use the `self_contained` argument to specify whether we should
-        include supporting records for our Party and Activty objects.
-
-        We use JPype to communicate with our underlying Java instance so
-        we can take advantage of the ANDS RIF-CS library.
-        See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
-        """
-        rifcs_xml = ''
-
-        #Sanity check before we start using JPype
-        if not jpype.isThreadAttachedToJVM():
-            jpype.attachThreadToJVM()
-
-        #Can't have too many sanity checks since something might be amiss
-        if jpype.isThreadAttachedToJVM():
-            org = jpype.JPackage('org')
-            null = None
-
-            metadata_wrapper = org.ands.rifcs.base.RIFCSWrapper()
-            rifcs = metadata_wrapper.getRIFCSObject()
-
-            collection_key = config.RIFCS_KEY % dict(type='collection',
-                                                     id=self.context.id)
-            registry = rifcs_utils.createRegistryObject(rifcs, collection_key)
-
-            collection = registry.newCollection()
-            collection.setType(self.context.collection_type)
-            collection_identifier = rifcs_utils.createIdentifier(
-                collection, 'local', self.context.id)
-            collection.addIdentifier(collection_identifier)
-
-            collection_names = [
-                {'type': 'primary',
-                 'value': self.context.title},
-            ]
-            rifcs_utils.addNamesToObject(collection, collection_names)
-
-            #location -- all address types are not RIF-CS standard at present
-            locations = self.context.locations + [
-                {'type': 'url',
-                 'value': self.context.absolute_url(),
-                 'designation': 'Electronic',
-                },
-            ]
-
-            for location in locations:
-                collection_location = collection.newLocation()
-                address = collection_location.newAddress()
-                if location['designation'] == 'Physical':
-                    physical_address = address.newPhysical()
-                    physical_address.setType('streetAddress')
-                    #XXX We need to do some fancy stuff here to make
-                    # complete addresses
-                    address_part = physical_address.newAddressPart()
-                    address_part.setValue(location['value'])
-                    address_part.setType(location['type'])
-
-                    physical_address.addAddressPart(address_part)
-                    address.addPhysical(physical_address)
-
-                elif location['designation'] == 'Electronic':
-                    electronic_address = address.newElectronic()
-                    electronic_address.setValue(location['value'])
-                    electronic_address.setType(location['type'])
-                    address.addElectronic(electronic_address)
-
-                #Now add our location to the collection
-                collection_location.addAddress(address)
-                collection.addLocation(collection_location)
-
-            #relatedObject - related parties
-            for party in self.context.related_parties:
-                user_record = self.user_query_source.prepareQuery(
-                    query_string=party['user_uid'],
-                    fields=['login_id'],
-                    exact=True
-                ).first()
-
-                #This should always be here unless something's gone very wrong
-                if user_record:
-                    user_record_id = config.RIFCS_KEY % \
-                            dict(type='party', id=user_record.uuid)
-                    related_party = rifcs_utils.createRelatedObject(
-                        node=collection,
-                        key=user_record_id,
-                        relationship=party['relationship']
-                    )
-                    collection.addRelatedObject(related_party)
-
-                #Prepare our party object for RIF-CS at the same time
-                if self_contained:
-                    rifcs.addRegistryObject(\
-                        rifcs_utils.createPartyAndRegistry(rifcs,
-                                                           user_record_id,
-                                                           user_record)
-                                           )
-
-            #relatedObject - related activities
-            for activity in self.context.related_activities:
-                activity_record = \
-                        self.activities_query_source.prepareQuery(
-                            query_string=activity,
-                            fields=['app_id'],
-                            exact=True
-                        ).first()
-
-                #This should always be here unless something's gone missing
-                #from the database
-                if activity_record:
-                    activity_record_id = config.RIFCS_KEY % \
-                            dict(type='activity', id=activity_record.app_id)
-                    related_activity = rifcs_utils.createRelatedObject(
-                        node=collection,
-                        key=activity_record_id,
-                        relationship='isOutputOf'
-                    )
-                    collection.addRelatedObject(related_activity)
-
-                    if self_contained:
-                        rifcs.addRegistryObject(
-                            rifcs_utils.createActivityAndRegistry(
-                                rifcs, activity_record_id, activity_record)
-                        )
-
-            #Back to handling our collection...
-            #subject
-            keyword_types = [
-                {'type': 'anzsrc-for',
-                 'value': self.context.for_codes},
-                {'type': 'anzsrc-seo',
-                 'value': self.context.seo_codes},
-                {'type': 'local',
-                 'value': self.context.keywords},
-                {'type': 'local',
-                 'value': [self.context.data_type,]},
-            ]
-            rifcs_utils.addSubjectsToObject(collection, keyword_types)
-
-            #description
-            descriptions = self.context.descriptions + [
-                {'type': 'accessRights',
-                 'value': self.context.access_restrictions},
-                {'type': 'rights',
-                 'value': self.context.legal_rights},
-            ]
-            rifcs_utils.addDescriptionsToObject(collection, descriptions)
-
-            #coverage
-            coverage = collection.newCoverage()
-            rifcs_utils.addDateTimeToCoverage(
-                coverage,
-                datetime_instance=self.context.temporal_coverage_start,
-                type="dateFrom"
-            )
-            rifcs_utils.addDateTimeToCoverage(
-                coverage,
-                datetime_instance=self.context.temporal_coverage_end,
-                type="dateTo"
-            )
-
-            if self.context.spatial_coverage_text:
-                coverage_spatial_text = coverage.newSpatial()
-                coverage_spatial_text.setValue(\
-                    self.context.spatial_coverage_text)
-                coverage_spatial_text.setType("text")
-                coverage.addSpatial(coverage_spatial_text)
-
-            if self.context.spatial_coverage_coords:
-                from shapely import wkt
-                geometry = wkt.loads(self.context.spatial_coverage_coords)
-                #XXX Need to handle situations with just point or linestring
-                if geometry.type == 'Polygon':
-                    coverage_spatial_coords = coverage.newSpatial()
-                    coords = geometry.__geo_interface__['coordinates'][0]
-                    coords_formatted = ' '.join(['%s,%s' % x for x in coords])
-                    coverage_spatial_coords.setValue(coords_formatted)
-                    coverage_spatial_coords.setType("kmlPolyCoords")
-                    coverage.addSpatial(coverage_spatial_coords)
-
-            collection.addCoverage(coverage);
-
-            #citationInfo - not implemented
-            #relatedInfo - not implemented
-
-            #Extra metadata about the actual record itself
-            collection.setDateAccessioned(\
-                self.context.creation_date.utcdatetime().isoformat())
-            collection.setDateModified(\
-                self.context.modification_date.utcdatetime().isoformat())
-
-            #Marshall all of our relevant objects into our RIF-CS
-            registry.addCollection(collection)
-            rifcs.addRegistryObject(registry)
-            #Validate if we would like to check this
-            if 'val' in self.request.form:
-                metadata_wrapper.validate()
-                return
-
-            rifcs_xml = metadata_wrapper.toString()
-
-        jpype.detachThreadFromJVM()
-        return rifcs_xml
+        validate = 'val' in self.request.form
+        return rifcs_utils.renderRifcs(self.context, validate=validate)
 
 
 import ipdb

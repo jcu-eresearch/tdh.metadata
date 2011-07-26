@@ -4,6 +4,18 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Restrict rifcs view on Repository to Managers and ANDS bots only.
+  [David]
+- Added jpype decorator method to utils module for invoking the JVM for any
+  method the decorator is applied to.
+  [David]
+- Provide @@rifcs view for the Repository content type so we can now output
+  all records for collections (and only show one of each party and activity
+  record from the repository)
+  [David]
+- Refactor and genericise RIF-CS rendering code and decouple the rendering
+  from a specific view.
+  [David]
 - Allow download of RIF-CS by using ?download at the end of a RIF-CS URL.
   [David]
 - Refactor lots of RIF-CS code in preparation for working with jOAI provider

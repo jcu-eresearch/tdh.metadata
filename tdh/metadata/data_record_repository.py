@@ -1,14 +1,18 @@
+
 from five import grok
-from plone.directives import dexterity, form
-
 from zope import schema
-
+from zope.security import checkPermission
+from zExceptions import Unauthorized
 from z3c.form import group, field
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
+from plone.directives import dexterity, form
 
-from tdh.metadata import MessageFactory as _
-from Products.CMFCore.utils import getToolByName
 from Acquisition import aq_inner
+from DateTime import DateTime
+from Products.CMFCore.utils import getToolByName
+
+from tdh.metadata import rifcs_utils
+from tdh.metadata import MessageFactory as _
 
 
 # Interface class; used to define content-type schema.
@@ -85,3 +89,44 @@ class DataRecordRepositorySearchView(grok.View):
     grok.require('zope2.View')
     grok.template('search')
     grok.name('search_form')
+
+class DataRecordRepositoryRifcsView(grok.View):
+    grok.context(IDataRecordRepository)
+    grok.require('zope2.View')
+    grok.name('rifcs')
+
+    days_in_past = 1.5
+    allowed_ips = ['130.56.60.96','130.56.62.108'] #ands-prod.anu.edu.au
+
+    def render(self):
+        #Check our permission to actually get all RIF-CS. This is an expensive
+        #operation and we need to make sure only Managers/ANDS can execute it.
+        #NOTE: these headers can be faked so we drop them at our webserver.
+        client_ip = \
+                self.request.get('HTTP_X_FORWARDED_FOR', '') or \
+                self.request.get('HTTP_X_REAL_IP', '')
+
+        if not checkPermission('cmf.ManagePortal', self.context) and \
+           client_ip not in self.allowed_ips:
+            raise Unauthorized(
+                'Client at %s not allowed to retrieve all RIF-CS' % client_ip)
+
+        self.request.response.setHeader('Content-Type', 'application/xml')
+
+        rifcs = rifcs_utils.renderRifcs(self.getRecentDatasetRecords(5))
+        return rifcs
+
+    def getRecentDatasetRecords(self, days_in_past=None):
+        """Return a list of DatasetRecord objects that were recently modified.
+
+        By default, we operate on how frequently the ANDS harvester will
+        come along, which is every day, with some leeway for delay, harvester
+        getting lost, or AI taking over the world.
+        """
+        days_in_past = days_in_past or self.days_in_past
+        catalog = getToolByName(self.context, 'portal_catalog')
+        results = catalog(Type='Dataset Record',
+                          modified={'query': DateTime()-days_in_past,
+                                    'range':'min'}
+                         )
+        return [result.getObject() for result in results]

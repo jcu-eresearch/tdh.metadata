@@ -5,3 +5,6 @@ from tdh.metadata.sources.anzrcs_codes import SEOCodesQuerySourceFactory, \
 from tdh.metadata.sources.research_keywords import \
         ResearchKeywordQuerySourceFactory
 from tdh.metadata.sources.users import UserQuerySourceFactory
+
+user_query_source = UserQuerySourceFactory()
+activities_query_source = ActivitiesQuerySourceFactory()

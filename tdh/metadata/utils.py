@@ -1,4 +1,5 @@
 
+import jpype
 from sqlalchemy.orm import mapper
 from sqlalchemy import Table
 
@@ -9,6 +10,28 @@ from plone.portlets.interfaces import IPortletManager, \
         ILocalPortletAssignmentManager
 from plone.portlets.constants import CONTEXT_CATEGORY
 
+def jpype_utilised(function):
+    """Decorator for functions that need to utilise JPype code.
+
+    The function wraps the attachment and detachment from a JVM, ensuring
+    that JPype calls will succeed.
+    """
+
+    def wrapper(*args, **kwargs):
+        #Sanity check before we start using JPype
+        if not jpype.isThreadAttachedToJVM():
+            jpype.attachThreadToJVM()
+
+        #Can't have too many sanity checks since something might be amiss
+        if jpype.isThreadAttachedToJVM():
+            return_value = function(*args, **kwargs)
+
+        #Detach from the JVM after we are done
+        jpype.detachThreadFromJVM()
+
+        return return_value
+
+    return wrapper
 
 def processDatabaseConnections(zope_config):
     """Return extracted database configuration from our Zope config.
