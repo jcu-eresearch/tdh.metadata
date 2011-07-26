@@ -1,6 +1,6 @@
 
 from five import grok
-from zope import schema
+from zope import schema, interface
 from zope.security import checkPermission
 from zExceptions import Unauthorized
 from z3c.form import group, field
@@ -12,6 +12,8 @@ from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
 
 from tdh.metadata import rifcs_utils
+from tdh.metadata.browser.rifcs import RifcsView
+from tdh.metadata.interfaces import IRifcsRenderable
 from tdh.metadata import MessageFactory as _
 
 
@@ -37,7 +39,8 @@ class IDataRecordRepository(form.Schema):
 # in separate view classes.
 
 class DataRecordRepository(dexterity.Container):
-    grok.implements(IDataRecordRepository)
+    grok.implements(IDataRecordRepository, IRifcsRenderable)
+    grok.provides(IDataRecordRepository)
 
     # Add your class methods and properties here
 
@@ -90,10 +93,8 @@ class DataRecordRepositorySearchView(grok.View):
     grok.template('search')
     grok.name('search_form')
 
-class DataRecordRepositoryRifcsView(grok.View):
+class DataRecordRepositoryRifcsView(RifcsView):
     grok.context(IDataRecordRepository)
-    grok.require('zope2.View')
-    grok.name('rifcs')
 
     days_in_past = 1.5
     allowed_ips = ['130.56.60.96','130.56.62.108'] #ands-prod.anu.edu.au
@@ -111,10 +112,12 @@ class DataRecordRepositoryRifcsView(grok.View):
             raise Unauthorized(
                 'Client at %s not allowed to retrieve all RIF-CS' % client_ip)
 
-        self.request.response.setHeader('Content-Type', 'application/xml')
+        return super(DataRecordRepositoryRifcsView, self).render()
 
-        rifcs = rifcs_utils.renderRifcs(self.getRecentDatasetRecords(5))
-        return rifcs
+    def getRenderables(self):
+        """Overriden from RifcsView.
+        """
+        return self.getRecentDatasetRecords(5)
 
     def getRecentDatasetRecords(self, days_in_past=None):
         """Return a list of DatasetRecord objects that were recently modified.

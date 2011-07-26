@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Genericise the RIF-CS views for our data records and the repository to use
+  the same view base.
+  [David]
 - Restrict rifcs view on Repository to Managers and ANDS bots only.
   [David]
 - Added jpype decorator method to utils module for invoking the JVM for any

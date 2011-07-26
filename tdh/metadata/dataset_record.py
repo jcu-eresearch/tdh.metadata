@@ -502,7 +502,8 @@ grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
 # in separate view classes.
 
 class DatasetRecord(dexterity.Item):
-    grok.implements(IDatasetRecord)
+    grok.implements(IDatasetRecord, interfaces.IRifcsRenderable)
+    grok.provides(IDatasetRecord)
 
     # Add your class methods and properties here
     @property
@@ -603,26 +604,6 @@ class View(dexterity.DisplayForm):
     grok.require('zope2.View')
     grok.name('view')
     grok.template('view')
-
-class RifcsView(grok.View):
-    grok.context(IDatasetRecord)
-    grok.require('zope2.View')
-    grok.name('rifcs')
-#    grok.template('rifcs')
-
-    def render(self):
-        self.request.response.setHeader('Content-Type', 'application/xml')
-
-        if 'download' in self.request.form:
-            filename = '%s.xml' % self.context.id
-            self.request.response.setHeader(
-                'Content-Disposition',
-                'attachment; filename="%s"' % filename)
-
-        validate = 'val' in self.request.form
-        return rifcs_utils.renderRifcs(self.context, validate=validate)
-
-
 
 #    form.widget(smarties=AutocompleteFieldWidget)
 #    smarties = schema.Choice(
