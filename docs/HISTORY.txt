@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Add `days_in_past` parameter to the @@rifcs view for Repository to enable
+  ANDS (and others?) to retrieve all records by specifying 'all' as the value.
+  [David]
 - Genericise the RIF-CS views for our data records and the repository to use
   the same view base.
   [David]

@@ -96,7 +96,6 @@ class DataRecordRepositorySearchView(grok.View):
 class DataRecordRepositoryRifcsView(RifcsView):
     grok.context(IDataRecordRepository)
 
-    days_in_past = 1.5
     allowed_ips = ['130.56.60.96','130.56.62.108'] #ands-prod.anu.edu.au
 
     def render(self):
@@ -117,7 +116,16 @@ class DataRecordRepositoryRifcsView(RifcsView):
     def getRenderables(self):
         """Overriden from RifcsView.
         """
-        return self.getRecentDatasetRecords(5)
+        value = self.request.form.get('days_in_past', '1')
+        days_in_past = 1
+        if value == 'all':
+            days_in_past = None
+        else:
+            try:
+                days_in_past = float(value)
+            except:
+                pass
+        return self.getRecentDatasetRecords(days_in_past)
 
     def getRecentDatasetRecords(self, days_in_past=None):
         """Return a list of DatasetRecord objects that were recently modified.
@@ -126,10 +134,12 @@ class DataRecordRepositoryRifcsView(RifcsView):
         come along, which is every day, with some leeway for delay, harvester
         getting lost, or AI taking over the world.
         """
-        days_in_past = days_in_past or self.days_in_past
         catalog = getToolByName(self.context, 'portal_catalog')
-        results = catalog(Type='Dataset Record',
-                          modified={'query': DateTime()-days_in_past,
-                                    'range':'min'}
-                         )
+
+        query = {'Type': 'Dataset Record'}
+        if days_in_past:
+            query['modified'] = modified={'query': DateTime()-days_in_past,
+                                          'range':'min'}
+
+        results = catalog.searchResults(query)
         return [result.getObject() for result in results]
