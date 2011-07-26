@@ -85,6 +85,12 @@ class IResearchCode(Interface):
         required=True,
     )
 
+class ICoinvestigator(Interface):
+   other = schema.TextLine(
+        title=_(u"Contributor"),
+        required=True,
+    )
+
 
 # Interface class; used to define content-type schema.
 
@@ -240,7 +246,7 @@ class IDatasetRecord(form.Schema):
                   label=u"Associations",
                   fields=['related_parties',
                           'related_activities',
-                          'contributors'],
+                          'coinvestigators'],
                  )
 
     form.widget(related_parties=DataGridFieldFactory)
@@ -269,12 +275,17 @@ class IDatasetRecord(form.Schema):
         default=[],
     )
 
-    contributors = schema.Text(
-      title=_(u"Co-investigators and other contributors"),
-      description=_(u"Enter details about other entities that you have collaborated with. Use this field only for non-JCU persons."),
-      required=False,
+    form.widget(coinvestigators=DataGridFieldFactory)
+    coinvestigators = schema.List(
+        title=_(u"Co-investigators and other contributors"),
+        description=_(u"Enter details about other entities that you have collaborated with. Use this field only for non-JCU persons."),
+        value_type=DictRow(
+            title=_(u"Contributor"),
+            schema=ICoinvestigator,
+        ),
+        required=False,
+        default=[],
     )
-
 
     #Keywords fieldset
     form.fieldset('keywords',
@@ -422,22 +433,51 @@ def descriptionIndexer(obj):
     return ' '.join(description_text)
 grok.global_adapter(descriptionIndexer, name="Description")
 
+def getInnerItems(list, fieldName):
+    sublist = []
+    for item in list:
+        sublist.append(item[fieldName])
+    return sublist
+
 @indexer(IDatasetRecord)
 def keywordsIndexer(obj):
     keywords_list = []
-    if obj.seo_codes is not None:
-        for seo_code in obj.seo_codes:
-            keywords_list.append(seo_code['code'])
-    if obj.for_codes is not None:
-        for for_code in obj.for_codes:
-            keywords_list.append(for_code['code'])
-    if obj.research_themes is not None:
-        keywords_list += obj.research_themes
-    if obj.keywords is not None:
-        keywords_list += obj.keywords
+    keywords_list += getInnerItems(obj.seo_codes,'code')
+    keywords_list += getInnerItems(obj.for_codes,'code')
+#    for seo_code in obj.seo_codes:
+#        keywords_list.append(seo_code['code'])
+#    for for_code in obj.for_codes:
+#        keywords_list.append(for_code['code'])
+    keywords_list += obj.research_themes
+    keywords_list += obj.keywords
     if keywords_list is None: return None
     return tuple(keywords_list)
 grok.global_adapter(keywordsIndexer, name="Subject")
+
+@indexer(IDatasetRecord)
+def relatedPartiesIndexer(obj):
+    if obj.related_parties is None:
+        return None
+    uid_list = []
+    uid_list += getInnerItems(obj.related_parties,'user_uid')
+#    for party in obj.related_parties:
+#        uid_list.append(party['user_uid'])
+    return tuple(uid_list)
+grok.global_adapter(relatedPartiesIndexer, name="related_parties")
+
+@indexer(IDatasetRecord)
+def relatedActivitiesIndexer(obj):
+    if obj.related_activities is None:
+        return None
+    return tuple(obj.related_activities)
+grok.global_adapter(relatedActivitiesIndexer, name="related_activities")
+
+@indexer(IDatasetRecord)
+def coinvestigatorsIndexer(obj):
+    if obj.coinvestigators is None:
+        return None
+    return tuple(getInnerItems(obj.coinvestigators,'other'))
+grok.global_adapter(coinvestigatorsIndexer, name="coinvestigators")
 
 @indexer(IDatasetRecord)
 def accessRestrictionsIndexer(obj):
@@ -455,16 +495,6 @@ grok.global_adapter(temporalCoverageStartIndexer, name="temporal_coverage_start"
 def temporalCoverageEndIndexer(obj):
     return DateTime(obj.temporal_coverage_end.isoformat())
 grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
-
-@indexer(IDatasetRecord)
-def relatedPartiesIndexer(obj):
-    if obj.related_parties is None:
-        return None
-    uid_list = []
-    for party in obj.related_parties:
-        uid_list.append(party['user_uid'])
-    return tuple(uid_list)
-grok.global_adapter(relatedPartiesIndexer, name="related_parties")
 
 # Custom content-type class; objects created for this content type will
 # be instances of this class. Use this class to add content-type specific
@@ -506,7 +536,7 @@ class DatasetRecordBaseForm(object):
             self._groups[2].\
                     widgets['related_activities'].autoFill = False
             self._groups[2].\
-                    widgets['contributors'].rows = 3
+                    widgets['coinvestigators'].rows = 3
             self._groups[3].\
                     widgets['keywords'].rows = 3
             self._groups[3].\
@@ -593,19 +623,14 @@ class RifcsView(grok.View):
         return rifcs_utils.renderRifcs(self.context, validate=validate)
 
 
-import ipdb
 
-class DescriptionsFieldConverter(DefaultDexterityTextIndexFieldConverter):
-    grok.adapts(IDexterityContent, IDataGridField, IWidget)
-
-    def convert(self):
-         # implement your custom converter
-         # which returns a string at the end
-         ipdb.set_trace()
-         for item in self.context.descriptions:
-             str_list.append(item['value'])
-             list_str = ' '.join(str_list)
-         return list_str
+#    form.widget(smarties=AutocompleteFieldWidget)
+#    smarties = schema.Choice(
+#        title=_(u"User ID"),
+#        description=_(u"Enter your JCU user ID. This field auto-completes."),
+#        required=True,
+#        vocabulary=u"plone.principalsource.Users",
+#    )
 
 class ListFieldConverter(DefaultDexterityTextIndexFieldConverter):
     grok.adapts(IDexterityContent, schema.interfaces.IList, IWidget)

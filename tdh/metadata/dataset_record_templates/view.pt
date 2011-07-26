@@ -67,25 +67,45 @@
   <div class="dataset-section">
       <h3>Associations</h3>
       <div tal:condition="here/related_parties" tal:content="structure view/w/related_parties/render"></div>
-      <div tal:condition="here/related_activities" tal:content="structure view/w/related_activities/render"></div>
-      <div tal:condition="here/contributors" tal:content="here/contributors"></div>
+      <b>Activities</b>: 
+          <div tal:condition="here/related_activities" tal:replace="structure view/w/related_activities/render"></div>
+      <div tal:condition="here/coinvestigators" >
+          <p><b>Contributors</b>: 
+          <tal:coinvestigators tal:repeat="person here/coinvestigators">
+          <span tal:replace="python: person.get('other','')"></span>
+          <span tal:condition="not:repeat/person/end">, </span>
+          </tal:coinvestigators>
+          </p>
+      </div>
   </div>
 
   <!-- Location -->
   <div class="dataset-section">
       <h3>Location</h3>
       <div tal:condition="here/locations" tal:content="structure view/w/locations/render"></div>
+  </div>
+  <!-- Access -->
+  <div class="dataset-section">
       <h3>Access to collection</h3>
-      <p><b>Licensing</b>: <span tal:replace="here/licensing"></span>
-      <p><b>Legal rights held over data</b>: <span tal:replace="here/legal_rights"></span>
-      <p><b>Access to collection</b>: <span tal:replace="here/access_restrictions"></span>
+      <p><b>Licensing</b>: <span tal:replace="here/licensing"></span><br />
+      <b>Legal rights held over data</b>: 
+      <span tal:content="here/legal_rights" 
+          tal:condition="here/legal_rights">Legal Rights</span>
+      <span tal:condition="not:here/legal_rights">None</span><br />
+      <b>Access to collection</b>: <span tal:replace="here/access_restrictions"></span></p>
   </div>
 
   <!-- About the data -->
   <div class="dataset-section">
       <h3>About the data</h3>
-      <p><b>Suggested retention period:</b> <span tal:replace="here/retention_period"></span>.<br />
-      <b>Nationally significant collection?</b> <span tal:replace="here/nationally_significant"></span></p>
+      <p><b>Suggested retention period:</b> 
+      <span tal:replace="here/retention_period" 
+          tal:condition="here/retention_period">Retention Period</span>
+      <span tal:condition="not:here/retention_period"> - </span>
+      <br />
+      <b>Nationally significant collection?</b> 
+      <span tal:condition="here/nationally_significant">Yes</span>
+      <span tal:condition="not:here/nationally_significant">No</span></p>
   </div>
 
   </metal:content-core>
