@@ -303,11 +303,25 @@ def createCollectionAndRegistry(node, context):
     addSubjectsToObject(collection, keyword_types)
 
     #description
+    import ipdb; ipdb.set_trace()
+    generic_note = """
+Coinvestigators:
+%(coinvestigators)s
+Related JCU Research Themes:
+%(research_themes)s
+    """ % dict(coinvestigators='\n'.join([c['other'] for c in context.coinvestigators] or ['None']),
+               research_themes='\n'.join(context.research_themes)
+              )
+
     descriptions = context.descriptions + [
         {'type': 'accessRights',
-         'value': context.access_restrictions},
+         'value': 'Access Restrictions: %s' % context.access_restrictions},
+        {'type': 'accessRights',
+         'value': 'Licensing: %s' % context.licensing},
         {'type': 'rights',
          'value': context.legal_rights},
+        {'type': 'note',
+         'value': generic_note},
     ]
     addDescriptionsToObject(collection, descriptions)
 
