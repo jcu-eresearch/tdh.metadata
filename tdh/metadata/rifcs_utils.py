@@ -2,6 +2,18 @@ from datetime import datetime
 import jpype
 from tdh.metadata import config, sources, utils
 
+
+GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
+                                   'format': lambda coords: \
+                                      ' '.join(['%s,%s' % x for x in coords[0]])
+                                  },
+                       'Point':   {'output_type': 'dcmiPoint',
+                                   'format': lambda coords: \
+                                       'east=%f; north=%f' % coords,
+                                  },
+                       'LineString': None, #not currently supported
+                      }
+
 def objectOrAttribute(object, attribute):
     """Return either the given object or an objects' attribute, if it exists.
 
@@ -115,7 +127,6 @@ def createPartyAndRegistry(node, id, user_record):
     rifcs_party = rifcs_party_registry.newParty()
     rifcs_party.setType('person')
 
-    #XXX Need to clarify whether this identifier is okay
     rifcs_party_id = createIdentifier(rifcs_party, 'local', user_record.uuid)
     rifcs_party.addIdentifier(rifcs_party_id)
 
@@ -156,7 +167,6 @@ def createActivityAndRegistry(node, id, activity_record):
     rifcs_activity = rifcs_activity_registry.newActivity()
     rifcs_activity.setType('project')
 
-    #XXX Need to clarify whether this identifier is okay
     rifcs_activity_id = createIdentifier(rifcs_activity,
                                          'local',
                                          activity_record.app_id)
@@ -248,19 +258,18 @@ def createCollectionAndRegistry(node, context):
         if location['designation'] == 'Physical':
             physical_address = address.newPhysical()
             physical_address.setType('streetAddress')
-            #XXX We need to do some fancy stuff here to make
-            # complete addresses
-            address_part = physical_address.newAddressPart()
-            address_part.setValue(location['value'])
-            address_part.setType(location['type'])
+            for location_part in location['value'].split('\n'):
+                address_part = physical_address.newAddressPart()
+                address_part.setValue(location_part)
+                address_part.setType('addressLine')
+                physical_address.addAddressPart(address_part)
 
-            physical_address.addAddressPart(address_part)
             address.addPhysical(physical_address)
 
         elif location['designation'] == 'Electronic':
             electronic_address = address.newElectronic()
             electronic_address.setValue(location['value'])
-            electronic_address.setType(location['type'])
+            electronic_address.setType('other') #'url' is possible here too
             address.addElectronic(electronic_address)
 
         #Now add our location to the collection
@@ -294,11 +303,25 @@ def createCollectionAndRegistry(node, context):
     addSubjectsToObject(collection, keyword_types)
 
     #description
+    import ipdb; ipdb.set_trace()
+    generic_note = """
+Coinvestigators:
+%(coinvestigators)s
+Related JCU Research Themes:
+%(research_themes)s
+    """ % dict(coinvestigators='\n'.join([c['other'] for c in context.coinvestigators] or ['None']),
+               research_themes='\n'.join(context.research_themes)
+              )
+
     descriptions = context.descriptions + [
         {'type': 'accessRights',
-         'value': context.access_restrictions},
+         'value': 'Access Restrictions: %s' % context.access_restrictions},
+        {'type': 'accessRights',
+         'value': 'Licensing: %s' % context.licensing},
         {'type': 'rights',
          'value': context.legal_rights},
+        {'type': 'note',
+         'value': generic_note},
     ]
     addDescriptionsToObject(collection, descriptions)
 
@@ -325,13 +348,15 @@ def createCollectionAndRegistry(node, context):
     if context.spatial_coverage_coords:
         from shapely import wkt
         geometry = wkt.loads(context.spatial_coverage_coords)
-        #XXX Need to handle situations with just point or linestring
-        if geometry.type == 'Polygon':
+
+        #Refer to the dict of converters for different geometries
+        geometry_converter = GEOMETRY_CONVERTERS[geometry.type]
+        if geometry_converter:
+            coords = geometry.__geo_interface__['coordinates']
+            coords_formatted = geometry_converter['format'](coords)
             coverage_spatial_coords = coverage.newSpatial()
-            coords = geometry.__geo_interface__['coordinates'][0]
-            coords_formatted = ' '.join(['%s,%s' % x for x in coords])
             coverage_spatial_coords.setValue(coords_formatted)
-            coverage_spatial_coords.setType("kmlPolyCoords")
+            coverage_spatial_coords.setType(geometry_converter['output_type'])
             coverage.addSpatial(coverage_spatial_coords)
 
     collection.addCoverage(coverage);

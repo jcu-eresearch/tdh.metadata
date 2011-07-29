@@ -4,7 +4,7 @@
         var next_widget = '#'+id+(level+1);
 
         if (thisObj.val() != '#') {
-            var data_source = '/@@anzrcs-codes?type='+type+'&code='+thisObj.val();
+            var data_source = '@@anzrcs-codes?type='+type+'&code='+thisObj.val();
             $(next_widget).load(data_source, function() { $(this).enable() });
             $(next_widget).parent().nextAll().find('select[id^='+id+']').html(' ').attr('disabled', 'disabled');
         } else {
