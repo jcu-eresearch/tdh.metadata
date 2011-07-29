@@ -127,7 +127,6 @@ def createPartyAndRegistry(node, id, user_record):
     rifcs_party = rifcs_party_registry.newParty()
     rifcs_party.setType('person')
 
-    #XXX Need to clarify whether this identifier is okay
     rifcs_party_id = createIdentifier(rifcs_party, 'local', user_record.uuid)
     rifcs_party.addIdentifier(rifcs_party_id)
 
@@ -168,7 +167,6 @@ def createActivityAndRegistry(node, id, activity_record):
     rifcs_activity = rifcs_activity_registry.newActivity()
     rifcs_activity.setType('project')
 
-    #XXX Need to clarify whether this identifier is okay
     rifcs_activity_id = createIdentifier(rifcs_activity,
                                          'local',
                                          activity_record.app_id)
@@ -260,19 +258,18 @@ def createCollectionAndRegistry(node, context):
         if location['designation'] == 'Physical':
             physical_address = address.newPhysical()
             physical_address.setType('streetAddress')
-            #XXX We need to do some fancy stuff here to make
-            # complete addresses
-            address_part = physical_address.newAddressPart()
-            address_part.setValue(location['value'])
-            address_part.setType(location['type'])
+            for location_part in location['value'].split('\n'):
+                address_part = physical_address.newAddressPart()
+                address_part.setValue(location_part)
+                address_part.setType('addressLine')
+                physical_address.addAddressPart(address_part)
 
-            physical_address.addAddressPart(address_part)
             address.addPhysical(physical_address)
 
         elif location['designation'] == 'Electronic':
             electronic_address = address.newElectronic()
             electronic_address.setValue(location['value'])
-            electronic_address.setType(location['type'])
+            electronic_address.setType('other') #'url' is possible here too
             address.addElectronic(electronic_address)
 
         #Now add our location to the collection
@@ -337,8 +334,8 @@ def createCollectionAndRegistry(node, context):
     if context.spatial_coverage_coords:
         from shapely import wkt
         geometry = wkt.loads(context.spatial_coverage_coords)
-        #XXX Need to handle situations with just point or linestring
 
+        #Refer to the dict of converters for different geometries
         geometry_converter = GEOMETRY_CONVERTERS[geometry.type]
         if geometry_converter:
             coords = geometry.__geo_interface__['coordinates']
