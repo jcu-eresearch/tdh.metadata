@@ -2,7 +2,7 @@ from DateTime import DateTime
 
 from five import grok
 from zope import schema
-from zope.interface import Interface, alsoProvides, invariant
+from zope.interface import Interface, alsoProvides, invariant, Invalid
 from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from z3c.form.interfaces import IWidget
@@ -29,6 +29,7 @@ import jpype
 from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
+from tdh.metadata.browser.anzsrc_codes import listAnzsrcCodesFromFile
 
 
 class IParty(Interface):
@@ -421,6 +422,40 @@ class IDatasetRecord(form.Schema):
     )
 
 alsoProvides(IDatasetRecord, IFormFieldProvider)
+
+# Validators
+@form.validator(field=IDatasetRecord['for_codes'])
+def validateForCodes(value):
+    """Ensure there are at least 1 and at most 3 codes and values add to 100.
+    """
+    if len(value) == 0:
+        raise Invalid(_(u"You must have at least 1 FoR code defined."))
+    elif len(value) > 3:
+        raise Invalid(_(u"You have too many FoR codes defined. \
+                        Please specify a maximum of 3 FoR codes."))
+
+    validateTotalOfCodes(value)
+    validateAllCodes(value, 'for_codes.csv')
+
+@form.validator(field=IDatasetRecord['seo_codes'])
+def validateSeoCodes(value):
+    validateTotalOfCodes(value)
+    validateAllCodes(value, 'seo_codes.csv')
+
+
+def validateAllCodes(value, filename):
+    #Check that all codes are valid
+    all_codes = listAnzsrcCodesFromFile(filename)
+    if not all([item['code'] in all_codes for item in value]):
+        raise Invalid(_(u"You have an invalid code present. Please check your \
+                        input or else use the drop-down menus to select \
+                        codes."))
+
+def validateTotalOfCodes(value):
+    if sum(item['value'] for item in value) != 100:
+        raise Invalid(_(u"Code percentage values must be integers and \
+                        add up to 100%."))
+
 
 # Indexers
 @indexer(IDatasetRecord)

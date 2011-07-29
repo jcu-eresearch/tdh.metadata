@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Add validators for FoR and SEO code fields.
+  [David]
 - Render out Point geometry as dcmiPoint.  LineStrings aren't supported
   still.
   [David]

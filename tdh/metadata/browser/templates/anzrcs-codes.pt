@@ -1,4 +1,0 @@
-<option value="#" style="font-weight:bold;">Select one</option>
-<tal:codes repeat="this_code view/sorted_keys">
-<option value="#" tal:attributes="value this_code;"><span class="anzrcs-code" tal:content="this_code">029902</span> - <span tal:replace="structure view/codes/?this_code/title">Complex Physical Systems</span></option>
-</tal:codes>
