@@ -2,6 +2,18 @@ from datetime import datetime
 import jpype
 from tdh.metadata import config, sources, utils
 
+
+GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
+                                   'format': lambda coords: \
+                                      ' '.join(['%s,%s' % x for x in coords[0]])
+                                  },
+                       'Point':   {'output_type': 'dcmiPoint',
+                                   'format': lambda coords: \
+                                       'east=%f; north=%f' % coords,
+                                  },
+                       'LineString': None, #not currently supported
+                      }
+
 def objectOrAttribute(object, attribute):
     """Return either the given object or an objects' attribute, if it exists.
 
@@ -326,12 +338,14 @@ def createCollectionAndRegistry(node, context):
         from shapely import wkt
         geometry = wkt.loads(context.spatial_coverage_coords)
         #XXX Need to handle situations with just point or linestring
-        if geometry.type == 'Polygon':
+
+        geometry_converter = GEOMETRY_CONVERTERS[geometry.type]
+        if geometry_converter:
+            coords = geometry.__geo_interface__['coordinates']
+            coords_formatted = geometry_converter['format'](coords)
             coverage_spatial_coords = coverage.newSpatial()
-            coords = geometry.__geo_interface__['coordinates'][0]
-            coords_formatted = ' '.join(['%s,%s' % x for x in coords])
             coverage_spatial_coords.setValue(coords_formatted)
-            coverage_spatial_coords.setType("kmlPolyCoords")
+            coverage_spatial_coords.setType(geometry_converter['output_type'])
             coverage.addSpatial(coverage_spatial_coords)
 
     collection.addCoverage(coverage);

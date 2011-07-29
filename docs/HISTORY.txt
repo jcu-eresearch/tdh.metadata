@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Render out Point geometry as dcmiPoint.  LineStrings aren't supported
+  still.
+  [David]
 - Add `days_in_past` parameter to the @@rifcs view for Repository to enable
   ANDS (and others?) to retrieve all records by specifying 'all' as the value.
   [David]
