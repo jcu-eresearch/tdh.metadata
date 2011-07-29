@@ -8,34 +8,46 @@
 <body>
 
 <metal:main fill-slot="content-core">
-  <metal:content-core define-macro="content-core">
+<metal:content-core define-macro="content-core"
+    tal:define="member context/@@plone_portal_state/member;">
 
-  <div id="left-hand-side" tal:define="member context/@@plone_portal_state/member; ">
+    <div id="left-hand-side"  
+        tal:define="itemsToReview view/itemsToReview" >
+
       <dl id="items-to-be-reviewed" class="collapsible" 
-          tal:condition="python: member.has_permission('Review portal content', context)">
+          tal:condition="python: member.has_permission('Review portal content', context) and itemsToReview">
+          <span tal:content="itemsToReview"></span>
             <dt class="collapsibleHeader">Items to be Reviewed</dt>
             <dd class="collapsibleContent">
-            <ul tal:repeat="item view/itemsToReview">
+            <ul tal:repeat="item itemsToReview">
                 <li><a href="dummydata" tal:content="item/Title"
                     tal:attributes="href item/getURL">CollectionTitle</a></li>
             </ul>
             </dd>
         </dl>
-        <dl class="collapsible" id="my-collections" tal:condition="python: member">
+        <dl class="collapsible" id="my-collections" 
+        tal:condition="not: here/portal_membership/isAnonymousUser">
             <dt class="collapsibleHeader">My Collections</dt>
             <dd class="collapsibleContent">
             <ul>
-                <li><a href="/Plone/resources/private-records">Private Collections</a> 
+                <li><a href="#"
+                    tal:attributes="href string:${portal_url}/resources/private-records">Private Collections</a> 
                     - unpublished metadata records</li>
-                <li><a href="/Plone/resources/published-records">Published Collections</a> 
+                    <li><a href="#"
+                        tal:attributes="href string:${portal_url}/resources/published-records">Published Collections</a> 
                     - publically accessible metadata records</li>
-                <li><a href="/Plone/resources/rda-records">Collections in RDA </a> 
+                <li><a href="#"
+                    tal:attributes="href string:${portal_url}/resources/rda-records">Collections in RDA </a> 
                     - metadata records that have been harvested by RDA</li>
-                <li><a href="/Plone/resources/under-review-records">Collections awaiting review</a> 
+                    <li><a href="#"
+                        tal:attributes="href string:${portal_url}/resources/under-review-records">Collections awaiting review</a> 
                     - metadata records in the publishing workflow</li>
             </ul>
             </dd>
         </dl>
+
+        <h2><a href="#"
+                tal:attributes="href string:${portal_url}/resources/data-collections">Browse Repository</a></h2>
     </div>
 
     <div id="right-hand-side">
