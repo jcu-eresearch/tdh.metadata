@@ -49,7 +49,13 @@ class BaseQuerySource(object):
 
         Implemented from ISource.
         """
-        return self.getTerm(value) and True or False
+        result = False
+        try:
+            result = self.getTerm(value) and True or False
+        except StopIteration:
+            #This means our value isn't present
+            pass
+        return result
 
     def getTerm(self, value):
         """Return a SimpleTerm using the given value as the token.
