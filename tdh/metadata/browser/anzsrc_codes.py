@@ -11,6 +11,13 @@ from plone.memoize import forever, view
 # Use templates directory to search for templates.
 grok.templatedir('templates')
 
+FOR_CODES = 'for_codes.csv'
+SEO_CODES = 'seo_codes.csv'
+CODE_FILE_MAPPING = {'for': FOR_CODES,
+                     'seo': SEO_CODES,
+                    }
+
+
 #Helper functions
 @forever.memoize
 def loadAnzsrcCodesFromFile(filename):
@@ -65,10 +72,6 @@ class AnzsrcCodesView(grok.View):
     """Render the option DOM elements for use by our dataset form
     """
 
-    file_mapping = {'for': 'for_codes.csv',
-                    'seo': 'seo_codes.csv',
-                   }
-
     code_part_len = 2
     codes = []
     sorted_keys = []
@@ -83,7 +86,7 @@ class AnzsrcCodesView(grok.View):
         anzsrc_code = self.request.code
         code_segments = buildCodeSegments(anzsrc_code, self.code_part_len)
 
-        filename = self.file_mapping.get(self.request.type)
+        filename = CODE_FILE_MAPPING.get(self.request.type)
         if filename:
             traversed_codes = loadAnzsrcCodes(anzsrc_code, filename)
 

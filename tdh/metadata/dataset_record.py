@@ -29,7 +29,7 @@ import jpype
 from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
-from tdh.metadata.browser.anzsrc_codes import listAnzsrcCodesFromFile
+from tdh.metadata.browser import anzsrc_codes
 
 
 class IParty(Interface):
@@ -435,17 +435,17 @@ def validateForCodes(value):
                         Please specify a maximum of 3 FoR codes."))
 
     validateTotalOfCodes(value)
-    validateAllCodes(value, 'for_codes.csv')
+    validateAllCodes(value, anzsrc_codes.FOR_CODES)
 
 @form.validator(field=IDatasetRecord['seo_codes'])
 def validateSeoCodes(value):
     validateTotalOfCodes(value)
-    validateAllCodes(value, 'seo_codes.csv')
+    validateAllCodes(value, anzsrc_codes.SEO_CODES)
 
 
 def validateAllCodes(value, filename):
-    #Check that all codes are valid
-    all_codes = listAnzsrcCodesFromFile(filename)
+    #Check that all codes are valid by looking up a QuerySource
+    all_codes = anzsrc_codes.listAnzsrcCodesFromFile(filename)
     if not all([item['code'] in all_codes for item in value]):
         raise Invalid(_(u"You have an invalid code present. Please check your \
                         input or else use the drop-down menus to select \
