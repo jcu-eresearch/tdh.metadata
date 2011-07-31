@@ -8,3 +8,5 @@ from tdh.metadata.sources.users import UserQuerySourceFactory
 
 user_query_source = UserQuerySourceFactory()
 activities_query_source = ActivitiesQuerySourceFactory()
+seo_codes_query_source = SEOCodesQuerySourceFactory()
+for_codes_query_source = FoRCodesQuerySourceFactory()

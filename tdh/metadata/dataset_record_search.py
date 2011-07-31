@@ -126,7 +126,7 @@ class IDatasetRecordSearch(form.Schema):
         required = False,
         value_type=schema.Choice(
             title=_(u"FoR Code"),
-            source=sources.FoRCodesQuerySourceFactory(),
+            source=sources.for_codes_query_source,
             required=False,
         ),
     )
@@ -138,7 +138,7 @@ class IDatasetRecordSearch(form.Schema):
                       return any record that matches ANY of the codes listed"),
         value_type=schema.Choice(
             title=_(u"SEO Code"),
-            source=sources.SEOCodesQuerySourceFactory(),
+            source=sources.seo_codes_query_source,
             required=False,
         ),
         required=False,
@@ -241,7 +241,7 @@ class SearchForm(form.SchemaForm):
         # need to sort out if they are doing a check by dates
         # if looking for dates then should select any that have
         # a temporal coverage range that over laps with the range given
-        # here. 
+        # here.
         if data['temporal_coverage_start'] is not None:
             print data['temporal_coverage_start']
         if data['temporal_coverage_end'] is not None:
