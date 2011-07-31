@@ -42,7 +42,7 @@ class IParty(Interface):
     user_uid = schema.Choice(
         title=_(u"Person"),
         required=True,
-        source=sources.UserQuerySourceFactory(),
+        source=sources.user_query_source,
     )
 
 class IDatasetDescription(Interface):
@@ -270,7 +270,7 @@ class IDatasetRecord(form.Schema):
                       with this record."),
         value_type=schema.Choice(
             title=_(u"Activity"),
-            source=sources.ActivitiesQuerySourceFactory(),
+            source=sources.activities_query_source,
             ),
         required=False,
         default=[],
