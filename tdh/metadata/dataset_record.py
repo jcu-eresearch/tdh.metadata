@@ -9,6 +9,7 @@ from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from z3c.form.interfaces import IWidget
 
+from Products.GenericSetup.interfaces import IDAVAware
 from plone.autoform.interfaces import IFormFieldProvider
 from plone.dexterity.interfaces import IDexterityContent
 from plone.directives import dexterity, form
@@ -441,8 +442,9 @@ def validateForCodes(value):
 
 @form.validator(field=IDatasetRecord['seo_codes'])
 def validateSeoCodes(value):
-    validateTotalOfCodes(value)
-    validateAllCodes(value, anzsrc_codes.SEO_CODES)
+    if value:
+        validateTotalOfCodes(value)
+        validateAllCodes(value, anzsrc_codes.SEO_CODES)
 
 def validateAllCodes(value, filename):
     #Check that all codes are valid by looking up a QuerySource
@@ -539,7 +541,7 @@ grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
 # in separate view classes.
 
 class DatasetRecord(dexterity.Item):
-    grok.implements(IDatasetRecord, interfaces.IRifcsRenderable)
+    grok.implements(IDatasetRecord, interfaces.IRifcsRenderable, IDAVAware)
     grok.provides(IDatasetRecord)
 
     # Add your class methods and properties here

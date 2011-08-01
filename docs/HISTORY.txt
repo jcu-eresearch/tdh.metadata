@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Make our content type DAVAware -- this means we can use PUT requests to 
+  create our data records.
+  [David]
 - Add GenericSetup profile to create Collection (Topic) objects for the TDH.
   We use the `structure` (`content`) import to create the basic structure
   and then a custom import step to configure the Collections.
