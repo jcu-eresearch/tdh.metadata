@@ -9,8 +9,12 @@ input#form-widgets-title {
     line-height: 125%;
 }
 
-div.tdh-metadata-form td.datagridwidget-cell {
-    vertical-align:top;
+div.tdh-metadata-form td.datagridwidget-cell input {
+    width:100%;
+}
+div.tdh-metadata-form td.datagridwidget-cell div.error {
+    margin: 0.5em 0;
+    padding: 0.3em;
 }
 /* @end */
 
