@@ -303,7 +303,6 @@ def createCollectionAndRegistry(node, context):
     addSubjectsToObject(collection, keyword_types)
 
     #description
-    import ipdb; ipdb.set_trace()
     generic_note = """
 Coinvestigators:
 %(coinvestigators)s
