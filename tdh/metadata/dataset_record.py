@@ -2,7 +2,9 @@ from DateTime import DateTime
 
 from five import grok
 from zope import schema
-from zope.interface import Interface, alsoProvides, invariant
+from zope.interface import Interface, alsoProvides, invariant, Invalid
+from zope.schema.interfaces import RequiredMissing, \
+        WrongContainedType
 from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from z3c.form.interfaces import IWidget
@@ -29,6 +31,7 @@ import jpype
 from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
+from tdh.metadata.browser import anzsrc_codes
 
 
 class IParty(Interface):
@@ -41,7 +44,7 @@ class IParty(Interface):
     user_uid = schema.Choice(
         title=_(u"Person"),
         required=True,
-        source=sources.UserQuerySourceFactory(),
+        source=sources.user_query_source,
     )
 
 class IDatasetDescription(Interface):
@@ -269,7 +272,7 @@ class IDatasetRecord(form.Schema):
                       with this record."),
         value_type=schema.Choice(
             title=_(u"Activity"),
-            source=sources.ActivitiesQuerySourceFactory(),
+            source=sources.activities_query_source,
             ),
         required=False,
         default=[],
@@ -422,6 +425,40 @@ class IDatasetRecord(form.Schema):
 
 alsoProvides(IDatasetRecord, IFormFieldProvider)
 
+# Validators
+@form.validator(field=IDatasetRecord['for_codes'])
+def validateForCodes(value):
+    """Ensure there are at least 1 and at most 3 codes and values add to 100.
+    """
+    if len(value) == 0:
+        raise Invalid(_(u"You must have at least 1 FoR code defined."))
+    elif len(value) > 3:
+        raise Invalid(_(u"You have too many FoR codes defined. \
+                        Please specify a maximum of 3 FoR codes."))
+
+    validateTotalOfCodes(value)
+    validateAllCodes(value, anzsrc_codes.FOR_CODES)
+
+@form.validator(field=IDatasetRecord['seo_codes'])
+def validateSeoCodes(value):
+    validateTotalOfCodes(value)
+    validateAllCodes(value, anzsrc_codes.SEO_CODES)
+
+def validateAllCodes(value, filename):
+    #Check that all codes are valid by looking up a QuerySource
+    all_codes = anzsrc_codes.listAnzsrcCodesFromFile(filename)
+    invalid_codes = [item['code'] for item in value if item['code'] not in all_codes]
+    if invalid_codes:
+        output_codes = ', '.join(invalid_codes)
+        raise Invalid(_(u"The following codes are note valid: %s. \
+                        Please check your input or else use the drop-down \
+                        menus to select codes." % output_codes))
+
+def validateTotalOfCodes(value):
+    if sum(item['value'] for item in value) != 100:
+        raise Invalid(_(u"Code percentage values must be integers and \
+                        add up to 100%."))
+
 # Indexers
 @indexer(IDatasetRecord)
 def descriptionIndexer(obj):
@@ -515,7 +552,7 @@ class DatasetRecord(dexterity.Item):
         return
 
 
-class DatasetForm(interfaces.ITDHForm):
+class IDatasetForm(interfaces.ITDHForm):
     pass
 
 class DatasetRecordBaseForm(object):
@@ -570,7 +607,7 @@ class DatasetRecordBaseForm(object):
 
 
 class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
-    grok.implements(DatasetForm)
+    grok.implements(IDatasetForm)
     grok.name('tdh.metadata.datasetrecord')
     grok.template('addform')
     form.wrap(False)
@@ -583,11 +620,22 @@ class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
         super(DatasetRecordAddForm, self).update()
 
 class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
-    grok.implements(DatasetForm)
+    grok.implements(IDatasetForm)
     grok.context(IDatasetRecord)
     grok.template('addform')
     form.wrap()
 
+#Error messages
+@form.error_message(widget=IDataGridField, error=WrongContainedType)
+def dgfFormMoreHelpfulError(value):
+    return moreHelpfulError(value)
+
+@form.error_message(widget=IDataGridField, error=ValueError)
+def dgfValueMoreHelpfulError(value):
+    return moreHelpfulError(value)
+
+def moreHelpfulError(value):
+    return u"Please correct your input below."
 
 # View class
 # The view will automatically use a similarly named template in
