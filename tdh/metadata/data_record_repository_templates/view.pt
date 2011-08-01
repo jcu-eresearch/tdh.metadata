@@ -32,16 +32,16 @@
             <ul>
                 <li><a href="#"
                     tal:attributes="href string:${here/searches/private-records/absolute_url}">Private Collections</a> 
-                    - unpublished metadata records</li>
+                    - my unpublished metadata records</li>
                     <li><a href="#"
                         tal:attributes="href string:${here/searches/published-records/absolute_url}">Published Collections</a> 
-                    - publically accessible metadata records</li>
+                    - my publically accessible metadata records</li>
                 <li><a href="#"
                     tal:attributes="href string:${here/searches/rda-records/absolute_url}">Collections in RDA </a> 
-                    - metadata records that have been harvested by RDA</li>
+                    - my metadata records that have been harvested by RDA</li>
                     <li><a href="#"
                         tal:attributes="href string:${here/searches/under-review-records/absolute_url}">Collections awaiting review</a> 
-                    - metadata records in the publishing workflow</li>
+                    - my metadata records in the publishing workflow</li>
             </ul>
             </dd>
         </dl>
