@@ -47,7 +47,7 @@ setup(name='tdh.metadata',
       [z3c.autoinclude.plugin]
       target = plone
       """,
-      setup_requires=["PasteScript"],
+      setup_requires=["PasteScript", "wikir"],
       paster_plugins = ["ZopeSkel"],
 
       )

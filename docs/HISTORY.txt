@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Add developer documentation to README
+  [David]
 - Make our content type DAVAware -- this means we can use PUT requests to 
   create our data records.
   [David]
