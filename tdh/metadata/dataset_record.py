@@ -3,6 +3,8 @@ from DateTime import DateTime
 from five import grok
 from zope import schema
 from zope.interface import Interface, alsoProvides, invariant, Invalid
+from zope.schema.interfaces import RequiredMissing, \
+        WrongContainedType
 from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from z3c.form.interfaces import IWidget
@@ -442,20 +444,20 @@ def validateSeoCodes(value):
     validateTotalOfCodes(value)
     validateAllCodes(value, anzsrc_codes.SEO_CODES)
 
-
 def validateAllCodes(value, filename):
     #Check that all codes are valid by looking up a QuerySource
     all_codes = anzsrc_codes.listAnzsrcCodesFromFile(filename)
-    if not all([item['code'] in all_codes for item in value]):
-        raise Invalid(_(u"You have an invalid code present. Please check your \
-                        input or else use the drop-down menus to select \
-                        codes."))
+    invalid_codes = [item['code'] for item in value if item['code'] not in all_codes]
+    if invalid_codes:
+        output_codes = ', '.join(invalid_codes)
+        raise Invalid(_(u"The following codes are note valid: %s. \
+                        Please check your input or else use the drop-down \
+                        menus to select codes." % output_codes))
 
 def validateTotalOfCodes(value):
     if sum(item['value'] for item in value) != 100:
         raise Invalid(_(u"Code percentage values must be integers and \
                         add up to 100%."))
-
 
 # Indexers
 @indexer(IDatasetRecord)
@@ -550,7 +552,7 @@ class DatasetRecord(dexterity.Item):
         return
 
 
-class DatasetForm(interfaces.ITDHForm):
+class IDatasetForm(interfaces.ITDHForm):
     pass
 
 class DatasetRecordBaseForm(object):
@@ -605,7 +607,7 @@ class DatasetRecordBaseForm(object):
 
 
 class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
-    grok.implements(DatasetForm)
+    grok.implements(IDatasetForm)
     grok.name('tdh.metadata.datasetrecord')
     grok.template('addform')
     form.wrap(False)
@@ -618,11 +620,22 @@ class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
         super(DatasetRecordAddForm, self).update()
 
 class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
-    grok.implements(DatasetForm)
+    grok.implements(IDatasetForm)
     grok.context(IDatasetRecord)
     grok.template('addform')
     form.wrap()
 
+#Error messages
+@form.error_message(widget=IDataGridField, error=WrongContainedType)
+def dgfFormMoreHelpfulError(value):
+    return moreHelpfulError(value)
+
+@form.error_message(widget=IDataGridField, error=ValueError)
+def dgfValueMoreHelpfulError(value):
+    return moreHelpfulError(value)
+
+def moreHelpfulError(value):
+    return u"Please correct your input below."
 
 # View class
 # The view will automatically use a similarly named template in
