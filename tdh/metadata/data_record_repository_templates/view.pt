@@ -16,7 +16,6 @@
 
       <dl id="items-to-be-reviewed" class="collapsible" 
           tal:condition="python: member.has_permission('Review portal content', context) and itemsToReview">
-          <span tal:content="itemsToReview"></span>
             <dt class="collapsibleHeader">Items to be Reviewed</dt>
             <dd class="collapsibleContent">
             <ul tal:repeat="item itemsToReview">
