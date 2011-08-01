@@ -31,23 +31,23 @@
             <dd class="collapsibleContent">
             <ul>
                 <li><a href="#"
-                    tal:attributes="href string:${portal_url}/resources/private-records">Private Collections</a> 
+                    tal:attributes="href string:${here/searches/private-records/absolute_url}">Private Collections</a> 
                     - unpublished metadata records</li>
                     <li><a href="#"
-                        tal:attributes="href string:${portal_url}/resources/published-records">Published Collections</a> 
+                        tal:attributes="href string:${here/searches/published-records/absolute_url}">Published Collections</a> 
                     - publically accessible metadata records</li>
                 <li><a href="#"
-                    tal:attributes="href string:${portal_url}/resources/rda-records">Collections in RDA </a> 
+                    tal:attributes="href string:${here/searches/rda-records/absolute_url}">Collections in RDA </a> 
                     - metadata records that have been harvested by RDA</li>
                     <li><a href="#"
-                        tal:attributes="href string:${portal_url}/resources/under-review-records">Collections awaiting review</a> 
+                        tal:attributes="href string:${here/searches/under-review-records/absolute_url}">Collections awaiting review</a> 
                     - metadata records in the publishing workflow</li>
             </ul>
             </dd>
         </dl>
 
         <h2><a href="#"
-                tal:attributes="href string:${portal_url}/resources/data-collections">Browse Repository</a></h2>
+                tal:attributes="href string:${here/searches/data-collections/absolute_url}">Browse Repository</a></h2>
     </div>
 
     <div id="right-hand-side">

@@ -4,6 +4,10 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Add GenericSetup profile to create Collection (Topic) objects for the TDH.
+  We use the `structure` (`content`) import to create the basic structure
+  and then a custom import step to configure the Collections.
+  [David]
 - Add more helpful error messages to form on error
   [David]
 - Add validators for FoR and SEO code fields.
