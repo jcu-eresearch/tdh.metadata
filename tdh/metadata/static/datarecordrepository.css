@@ -87,7 +87,22 @@ input#form-widgets-related_activities-widgets-query {
     padding-bottom: 1em;
 }
 
+/* footer styling */
+div.tdhfooterWrapper .left-image {
+    float: left;
+    padding: 10px 0 0 10px;
+}
 
+div.tdhfooterWrapper .right-image {
+    float: right;
+    padding: 10px;
+}
+
+div.tdhfooterWrapper .centre-text {
+    width: auto;
+    border: 1px solid black;
+    padding: 20px;
+}
 
 /* jcu theme specific coloring */
 #content-core dt a {
