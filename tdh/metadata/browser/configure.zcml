@@ -20,4 +20,12 @@
         permission="zope2.View"
         />
 
+    <browser:viewlet
+        name="tdh.footer"
+        for="*"
+        manager="plone.app.layout.viewlets.interfaces.IPortalFooter"
+        layer="plone.theme.interfaces.IDefaultPloneLayer"
+        template="templates/tdhfooter.pt"
+        permission="zope.Public"
+        />
 </configure>
