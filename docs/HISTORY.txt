@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Changed DB configuration to now be flexible for db-type -- we were using
+  only Oracle connection info before.
+  [David]
 - Add developer documentation to README
   [David]
 - Make our content type DAVAware -- this means we can use PUT requests to 
