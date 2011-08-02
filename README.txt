@@ -38,10 +38,10 @@ Requirements
 * Ability to install system libraries and dependencies from the following 
   Python packages:
 
- * Plone
- * Shapely
- * collective.geo.bundle
- * JPype
+  * Plone
+  * Shapely
+  * collective.geo.bundle
+  * JPype
 
 * Database drivers (cx_Oracle, for instance) and associated libraries
 * Java JVM installed (OpenJDK and Oracle compatible)
