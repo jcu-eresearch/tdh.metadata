@@ -1,4 +1,3 @@
-We can have more text here.
 <div class="tdh-metadata-form">
 <metal:use use-macro="context/@@ploneform-macros/titlelessform" />
 </div>
