@@ -53,7 +53,6 @@ def configure_repository(context):
 
         topics = {searches_folder['private-records']:
                       {'state': 'private',
-                       'creator': True,
                        'shared_with_users': True,
                       },
                   searches_folder['published-records']:
@@ -63,7 +62,6 @@ def configure_repository(context):
                       },
                   searches_folder['under-review-records']:
                       {'state': 'pending',
-                       'creator': True,
                        'shared_with_users': True,
                       },
                   searches_folder['rda-records']:
@@ -117,7 +115,7 @@ def configure_repository(context):
 
             #Sort by modification date in reverse order unless otherwise set
             sort_field = 'modified'
-            sort_reversed = False
+            sort_reversed = True
             if 'sort' in options:
                 sort_field = options['sort']['field']
                 sort_reversed = options['sort']['reversed']
