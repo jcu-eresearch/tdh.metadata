@@ -51,7 +51,7 @@
 
     <div id="right-hand-side">
         <div id="search-widget" >
-            <form action="@@search-repository" method="get" name="dataset_search" id="dataset_searchform">
+            <form action="@@search" method="get" name="dataset_search" id="dataset_searchform">
                 <input type="hidden" name="portal_type:list" value="tdh.metadata.datasetrecord" id="portal_type_2_3">
             <label class="hiddenStructure" for="metadataSearch">
                 Metadata Records search
