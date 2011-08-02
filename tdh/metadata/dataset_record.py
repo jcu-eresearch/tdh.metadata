@@ -460,6 +460,8 @@ def validateTotalOfCodes(value):
     if sum(item['value'] for item in value) != 100:
         raise Invalid(_(u"Code percentage values must be integers and \
                         add up to 100%."))
+    if any(item['value'] < 0 for item in value):
+        raise Invalid(_(u"All code percentage values must be positive integers."))
 
 # Indexers
 @indexer(IDatasetRecord)
