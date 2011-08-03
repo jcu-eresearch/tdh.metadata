@@ -237,19 +237,19 @@ class SearchForm(form.SchemaForm):
     def getResults(self, data):
         catalog = getToolByName(self.context, 'portal_catalog')
         keyargs = {'portal_type':'tdh.metadata.datasetrecord'}
-        print "Parameters used on catalog search: "
+        # print "Parameters used on catalog search: "
         # need to sort out if they are doing a check by dates
         # if looking for dates then should select any that have
         # a temporal coverage range that over laps with the range given
         # here.
-        if data['temporal_coverage_start'] is not None:
-            print data['temporal_coverage_start']
-        if data['temporal_coverage_end'] is not None:
-            print data['temporal_coverage_end']
+        # if data['temporal_coverage_start'] is not None:
+        #     print data['temporal_coverage_start']
+        # if data['temporal_coverage_end'] is not None:
+        #     print data['temporal_coverage_end']
         for k,v in data.items():
             if v in [ None, False, [] ]:
                 continue
-            print k, " = ", v
+        #     print k, " = ", v
             keyargs[k] = v
         return catalog.searchResults(keyargs)
 

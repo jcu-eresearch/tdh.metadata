@@ -680,7 +680,6 @@ class ListFieldConverter(DefaultDexterityTextIndexFieldConverter):
              for item in self.context.keywords:
                  str_list.append(item)
          list_str = ' '.join(str_list)
-         print "converted text: ", list_str
 
          return list_str
 
