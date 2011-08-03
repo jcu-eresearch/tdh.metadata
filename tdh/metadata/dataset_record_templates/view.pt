@@ -8,13 +8,16 @@
 <body>
 
 <metal:main fill-slot="content-core">
-  <metal:content-core define-macro="content-core">
+  <metal:content-core define-macro="content-core"
+      tal:define="member context/@@plone_portal_state/member;
+                  isReviewer python:member.has_permission('Review portal content', context);">
 
   <blockquote class="pullquote">
     <a href="@@rifcs" tal:attributes="href string:${here/absolute_url}/@@rifcs?download"
       title="Download RIF-CS">Download RIF-CS</a><br />
     <a href="@@rifcs" 
       tal:attributes="href string:${here/absolute_url}/@@rifcs?val"
+      tal:condition="isReviewer"
       title="Validate RIF-CS">Validate RIF-CS</a><br />
   </blockquote>
   <div class="visualClear"></div>

@@ -9,13 +9,15 @@
 
 <metal:main fill-slot="content-core">
 <metal:content-core define-macro="content-core"
-    tal:define="member context/@@plone_portal_state/member;">
+    tal:define="member context/@@plone_portal_state/member;
+                isReviewer python:member.has_permission('Review portal content', context);
+                isManager python:member.has_permission('Manage portal', context);">
 
     <div id="left-hand-side"  
         tal:define="itemsToReview view/itemsToReview" >
 
       <dl id="items-to-be-reviewed" class="collapsible" 
-          tal:condition="python: member.has_permission('Review portal content', context) and itemsToReview">
+          tal:condition="python: isReviewer and itemsToReview">
             <dt class="collapsibleHeader">Items to be Reviewed</dt>
             <dd class="collapsibleContent">
             <ul tal:repeat="item itemsToReview">
@@ -47,6 +49,9 @@
 
         <h2><a href="#"
                 tal:attributes="href string:${here/searches/data-collections/absolute_url}">Browse Repository</a></h2>
+        <h2><a href="#"
+                tal:condition="isManager"
+                tal:attributes="href string:${here/absolute_url}/@@rifcs?download">Download all RIF-CS</a></h2>
     </div>
 
     <div id="right-hand-side">
