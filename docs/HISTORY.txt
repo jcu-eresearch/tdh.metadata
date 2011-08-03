@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.1dev (unreleased)
-----------------------
+1.0 (2011-08-03)
+----------------
 
 - Added collective.geo configuration import step.
   [David]
