@@ -547,13 +547,14 @@ class DatasetRecord(dexterity.Item):
     grok.provides(IDatasetRecord)
 
     # Add your class methods and properties here
+    __id = None
     @property
     def id(self):
-        return IUUID(self)
+        return self.__id and self.__id or IUUID(self)
 
     @id.setter
     def id(self, value):
-        return
+        self.__id = value
 
 
 class IDatasetForm(interfaces.ITDHForm):

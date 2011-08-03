@@ -4,6 +4,9 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Remove restriction on changing IDs.  This borked plone.app.iterate
+  functionality.
+  [David]
 - Removed additional reference to jcu.theme
   [David]
 - Add workflow to our product.  We have a placeful workflow for checkouts
