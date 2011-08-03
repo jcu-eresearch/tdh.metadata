@@ -43,4 +43,17 @@
 
     };
 
+    $(document).ready(function() {
+        $('input[name=form.widgets.research_themes:list]').not(':last').click(
+                function() {
+                    $('input[name=form.widgets.research_themes:list]').last().attr("checked", false);
+                }
+        );
+        $('input[name=form.widgets.research_themes:list]').last().click(
+                function() {
+                    $('input[name=form.widgets.research_themes:list]').not(':last').attr("checked", false);
+                }
+        );
+    });
+
 })(jQuery);
