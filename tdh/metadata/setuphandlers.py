@@ -72,7 +72,16 @@ def configure_repository(context):
             return
 
         wftool = getToolByName(portal, "portal_workflow")
-        searches_folder = portal.data.searches
+        metadata_repository = portal.data
+        wftool.doActionFor(metadata_repository, 'publish')
+        metadata_repository.manage_setLocalRoles('AuthenticatedUsers',
+                                                 ['Contributor'])
+        metadata_repository.reindexObjectSecurity()
+
+        searches_folder = metadata_repository.searches
+        wftool.doActionFor(searches_folder, 'publish')
+        searches_folder.__ac_local_roles_block__ = True
+        searches_folder.reindexObjectSecurity()
         #Configure each of the Topic objects (Collections)
 
         topics = {searches_folder['private-records']:
@@ -136,6 +145,7 @@ def configure_repository(context):
 
             if 'shared_with_users' in options:
                 topic.manage_setLocalRoles('AuthenticatedUsers', ['Reader'])
+                topic.reindexObjectSecurity()
 
             #Sort by modification date in reverse order unless otherwise set
             sort_field = 'modified'
