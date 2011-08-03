@@ -22,7 +22,8 @@
   </blockquote>
   <div class="visualClear"></div>
   <!-- Actual data -->
-  <div id="dataset-data" class="dataset-section">
+  <div id="dataset-data" class="dataset-section" 
+    tal:condition="here/dataset_data">
       <h3>Data Download</h3>
       <div tal:condition="here/dataset_data" tal:content="structure view/w/dataset_data/render">Data</div>
   </div>
@@ -87,7 +88,7 @@
   </div>
 
   <!-- Location -->
-  <div class="dataset-section">
+  <div class="dataset-section" tal:condition="here/locations">
       <h3>Location</h3>
       <div tal:condition="here/locations" tal:content="structure view/w/locations/render"></div>
   </div>
