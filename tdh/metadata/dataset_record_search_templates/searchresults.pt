@@ -28,8 +28,11 @@
                 </dl>
                 <tal:showresults tal:define="results python:view.getResults(data)">
                 <div tal:condition="results">
-                    <div class="error" tal:content="results"></div>
-                    There are <span tal:replace="python:len(results)"></span> records matching your query.
+
+                    <div class="error" tal:content="results" tal:condition="nothing">Debugging only</div>
+                    
+                    <h3>Search Results <span style="font-weight: lighter; font-size: smaller"> - <span tal:replace="python:len(results)"></span> records matching your query</span>
+                    </h3>
                     <dl tal:repeat="result results">
                         <dt><a href="" tal:attributes="href result/getURL" tal:content="result/Title"></a></dt>
                         <dd tal:content="result/Description"></dd>
