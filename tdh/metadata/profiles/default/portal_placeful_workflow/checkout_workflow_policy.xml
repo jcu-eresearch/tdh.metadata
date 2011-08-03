@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<object name="checkout_workflow_policy" meta_type="WorkflowPolicy">
+ <property name="title">Check out workflow policy</property>
+ <bindings>
+  <default>
+   <bound-workflow workflow_id="simple_publication_workflow"/>
+  </default>
+  <type type_id="Document">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="Event">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="File">
+   <bound-workflow workflow_id=""/>
+  </type>
+  <type type_id="Folder">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="Image">
+   <bound-workflow workflow_id=""/>
+  </type>
+  <type type_id="Link">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="News Item">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="Topic">
+   <bound-workflow workflow_id="(Default)"/>
+  </type>
+  <type type_id="tdh.metadata.datasetrecord">
+   <bound-workflow workflow_id="tdh_dataset_record_checkout_workflow"/>
+  </type>
+ </bindings>
+</object>

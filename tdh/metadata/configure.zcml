@@ -27,7 +27,7 @@
 
   <genericsetup:upgradeStep
       source="*"
-      destination="13"
+      destination="14"
       title="Reinstall tdh.metadata"
       description="Reinstall tdh.metadata"
       handler="tdh.metadata.setuphandlers.upgrade_by_reinstall"

@@ -4,6 +4,11 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Removed additional reference to jcu.theme
+  [David]
+- Add workflow to our product.  We have a placeful workflow for checkouts
+  of Dataset Record content objects.
+  [David]
 - Changed DB configuration to now be flexible for db-type -- we were using
   only Oracle connection info before.
   [David]
