@@ -9,7 +9,7 @@
     title="" applyPrefix="False" authenticated="False"
     cacheable="True" compression="safe" conditionalcomment="" cookable="True"
     id="++resource++tdh.metadata/datarecordrepository.css"
-    enabled="True" expression="context/@@dataset_form_resources" media="all"
+    enabled="True" media="all"
     rel="stylesheet" rendering="import" 
     />
 
