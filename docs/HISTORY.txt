@@ -4,6 +4,8 @@ Changelog
 0.1dev (unreleased)
 ----------------------
 
+- Added collective.geo configuration import step.
+  [David]
 - Remove restriction on changing IDs.  This borked plone.app.iterate
   functionality.
   [David]
