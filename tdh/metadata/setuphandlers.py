@@ -1,4 +1,10 @@
+import decimal
+from zope.component import getUtility
+from plone.registry.interfaces import IRegistry
 from Products.CMFCore.utils import getToolByName
+
+from collective.geo.settings.interfaces import IGeoSettings, IGeoFeatureStyle
+
 from tdh.metadata.config import PROFILE_ID
 
 def upgrade_by_reinstall(context):
@@ -37,6 +43,24 @@ def update_catalog(context, clear=True):
         logger.info('...done.')
     else:
         logger.warn('Could not update catalog.')
+
+def configure_collective_geo(context):
+    portal = context.getSite()
+    logger = context.getLogger('tdh.metadata configure_collective_geo')
+    registry = getUtility(IRegistry)
+
+    #General settings
+    geo_settings = registry.forInterface(IGeoSettings)
+    geo_settings.zoom = decimal.Decimal('13')
+    geo_settings.longitude = decimal.Decimal('146.81787870000352')
+    geo_settings.latitude = decimal.Decimal('-19.257622300000246')
+
+    #Style settings
+    geo_styles = registry.forInterface(IGeoFeatureStyle)
+    geo_styles.map_width = u'100%'
+    geo_styles.map_height = u'300px'
+
+    logger.info('Configured collective.geo map and style settings')
 
 def configure_repository(context):
     portal = context.getSite()

@@ -53,6 +53,13 @@ the catalog needs to be updated."
      <depends name="tdh.metadata_configureRepository"/>
    </genericsetup:importStep>
 
+  <genericsetup:importStep
+       name="tdh.metadata_configureCollectiveGeo"
+       title="Configure collective.geo settings"
+       description="Set height/width for maps to prevent errors"
+       handler="tdh.metadata.setuphandlers.configure_collective_geo">
+   </genericsetup:importStep>
+
 
     <!-- -*- extra stuff goes here -*- -->
 
