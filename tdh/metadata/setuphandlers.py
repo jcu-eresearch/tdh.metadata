@@ -51,9 +51,9 @@ def configure_collective_geo(context):
 
     #General settings
     geo_settings = registry.forInterface(IGeoSettings)
-    geo_settings.zoom = decimal.Decimal('13')
-    geo_settings.longitude = decimal.Decimal('146.81787870000352')
-    geo_settings.latitude = decimal.Decimal('-19.257622300000246')
+    geo_settings.zoom = decimal.Decimal('4')
+    geo_settings.longitude = decimal.Decimal('132.72036008179202')
+    geo_settings.latitude = decimal.Decimal('-14.377099971700982')
 
     #Style settings
     geo_styles = registry.forInterface(IGeoFeatureStyle)
