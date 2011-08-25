@@ -47,20 +47,26 @@ def update_catalog(context, clear=True):
 def configure_collective_geo(context):
     portal = context.getSite()
     logger = context.getLogger('tdh.metadata configure_collective_geo')
-    registry = getUtility(IRegistry)
+    try:
+        registry = getUtility(IRegistry)
 
-    #General settings
-    geo_settings = registry.forInterface(IGeoSettings)
-    geo_settings.zoom = decimal.Decimal('4')
-    geo_settings.longitude = decimal.Decimal('132.72036008179202')
-    geo_settings.latitude = decimal.Decimal('-14.377099971700982')
+        #General settings
+        geo_settings = registry.forInterface(IGeoSettings)
+        geo_settings.zoom = decimal.Decimal('4')
+        geo_settings.longitude = decimal.Decimal('132.72036008179202')
+        geo_settings.latitude = decimal.Decimal('-14.377099971700982')
 
-    #Style settings
-    geo_styles = registry.forInterface(IGeoFeatureStyle)
-    geo_styles.map_width = u'100%'
-    geo_styles.map_height = u'300px'
+        #Style settings
+        geo_styles = registry.forInterface(IGeoFeatureStyle)
+        geo_styles.map_width = u'100%'
+        geo_styles.map_height = u'300px'
 
-    logger.info('Configured collective.geo map and style settings')
+        logger.info('Configured collective.geo map and style settings')
+    except:
+        logger.info('Could not configure collective.geo (registry likely not \
+                     available).')
+        return
+
 
 def configure_repository(context):
     portal = context.getSite()
