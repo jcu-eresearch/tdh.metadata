@@ -78,10 +78,23 @@ class IDatasetLocation(Interface):
         required=True,
     )
 
-class IResearchCode(Interface):
-    code = schema.TextLine(
+class IResearchForCode(Interface):
+    code = schema.Choice(
         title=_(u"Code"),
         required=True,
+        vocabulary=vocabularies.vocabularyFromAnzsrcCodeFile(anzsrc_codes.FOR_CODES),
+    )
+
+    value = schema.Int(
+        title=_(u"Percentage"),
+        required=True,
+    )
+
+class IResearchSeoCode(Interface):
+    code = schema.Choice(
+        title=_(u"Code"),
+        required=True,
+        vocabulary=vocabularies.vocabularyFromAnzsrcCodeFile(anzsrc_codes.SEO_CODES),
     )
 
     value = schema.Int(
@@ -308,10 +321,11 @@ class IDatasetRecord(form.Schema):
                     exactly 100%."),
       value_type=DictRow(
           title=_(u"FoR Code"),
-          schema=IResearchCode,
+          schema=IResearchForCode,
       ),
       required=True,
     )
+
 
     form.widget(seo_codes=widgets.SeoCodeDataGridFieldFactory)
     seo_codes = schema.List(
@@ -320,7 +334,7 @@ class IDatasetRecord(form.Schema):
       default=[],
       value_type=DictRow(
           title=_(u"SEO Code"),
-          schema=IResearchCode,
+          schema=IResearchSeoCode,
       ),
     )
 
