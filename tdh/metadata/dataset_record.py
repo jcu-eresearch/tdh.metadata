@@ -33,6 +33,7 @@ from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.browser import anzsrc_codes
+from tdh.metadata.sources import anzsrc_csv
 
 
 class IParty(Interface):
@@ -82,7 +83,7 @@ class IResearchForCode(Interface):
     code = schema.Choice(
         title=_(u"Code"),
         required=True,
-        vocabulary=vocabularies.vocabularyFromAnzsrcCodeFile(anzsrc_codes.FOR_CODES),
+        source=anzsrc_csv.AnzsrcCodeCsvSource(anzsrc_codes.FOR_CODES),
     )
 
     value = schema.Int(
@@ -94,7 +95,7 @@ class IResearchSeoCode(Interface):
     code = schema.Choice(
         title=_(u"Code"),
         required=True,
-        vocabulary=vocabularies.vocabularyFromAnzsrcCodeFile(anzsrc_codes.SEO_CODES),
+        source=anzsrc_csv.AnzsrcCodeCsvSource(anzsrc_codes.SEO_CODES),
     )
 
     value = schema.Int(
@@ -312,6 +313,7 @@ class IDatasetRecord(form.Schema):
                  )
 
     form.widget(for_codes=widgets.ForCodeDataGridFieldFactory)
+    #form.widget(for_codes=AutocompleteMultiFieldWidget)
     for_codes = schema.List(
       title=_(u"Fields of Research"),
       description=_(u"Select or enter up to three (3) separate Fields of \
@@ -619,6 +621,9 @@ class DatasetRecordBaseForm(object):
     def datagridInitialise(self, subform, widget):
         if 'user_uid' in subform.fields:
             subform.fields['user_uid'].widgetFactory = AutocompleteFieldWidget
+	#If want to disable autocomplete for FoR and SEO codes, delete if sentences below
+        if 'code' in subform.fields:
+            subform.fields['code'].widgetFactory = AutocompleteFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
         if widget.name == 'form.widgets.related_parties':
