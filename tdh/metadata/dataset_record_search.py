@@ -3,6 +3,9 @@
 #
 # creates a form for the search interface for the data record repository
 #
+
+import time
+
 from five import grok
 from plone.directives import form
 
@@ -42,8 +45,7 @@ class IDatasetRecordSearch(form.Schema):
 
     Subject = schema.TextLine(
       title=_(u"Keywords"),
-      description=_(u"Enter keywords that you are searching for, \
-                    separated with AND or OR as appropriate"),
+      description=_(u"Enter keywords that you are searching for"),
       required=False,
     )
 
@@ -242,16 +244,29 @@ class SearchForm(form.SchemaForm):
         # if looking for dates then should select any that have
         # a temporal coverage range that over laps with the range given
         # here.
-        # if data['temporal_coverage_start'] is not None:
-        #     print data['temporal_coverage_start']
-        # if data['temporal_coverage_end'] is not None:
-        #     print data['temporal_coverage_end']
+
+        dateSearchStart = time.strptime('1900-01-01','%Y-%m-%d')
+        dateSearchEnd = time.strptime('2999-12-31','%Y-%m-%d')
+
+        if data['temporal_coverage_start'] is not None:
+             dateSearchStart = data['temporal_coverage_start']
+             data['temporal_coverage_start'] = None
+             
+        if data['temporal_coverage_end'] is not None:
+             dateSearchEnd = data['temporal_coverage_end']
+             data['temporal_coverage_end'] = None
+
         for k,v in data.items():
             if v in [ None, False, [] ]:
                 continue
         #     print k, " = ", v
             keyargs[k] = v
+
+      	keyargs['temporal_coverage_start'] = {'query':(dateSearchEnd),'range': 'max'}
+        keyargs['temporal_coverage_end'] =  {'query':(dateSearchStart),'range': 'min'}
+	
         return catalog.searchResults(keyargs)
+
 
     @button.buttonAndHandler(_(u"Cancel"))
     def handleCancel(self, action):

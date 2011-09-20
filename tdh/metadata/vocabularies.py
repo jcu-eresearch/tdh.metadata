@@ -1,4 +1,5 @@
 from zope import schema
+from tdh.metadata.browser import anzsrc_codes
 
 
 def vocabularyFromPairs(pairs):
@@ -7,6 +8,15 @@ def vocabularyFromPairs(pairs):
             value=pair[0],
             token=pair[0],
             title=pair[1]) for pair in pairs]
+    )
+
+def vocabularyFromAnzsrcCodeFile(filename):
+    rows= anzsrc_codes.loadAnzsrcCodesFromFile(filename);
+    return schema.vocabulary.SimpleVocabulary(
+        [schema.vocabulary.SimpleTerm(
+            value=row[0],
+            token=row[0],
+            title=row[0]+' - '+row[1]) for row in rows]
     )
 
 RELATIONSHIPS = (

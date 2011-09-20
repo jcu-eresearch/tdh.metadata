@@ -38,7 +38,8 @@
         });
 
         addButton.click(function() {
-            $(identifier+'AA-widgets-'+target_field).val(lastMenu.val()).parent().change();
+            $(identifier+'AA-widgets-'+target_field+'-widgets-query').val(lastMenu.val()).search();
+            	
         });
 
     };
@@ -54,6 +55,7 @@
                     $('input[name=form.widgets.research_themes:list]').not(':last').attr("checked", false);
                 }
         );
+	
     });
 
 })(jQuery);
