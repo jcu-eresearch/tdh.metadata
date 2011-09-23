@@ -6,7 +6,8 @@ Changelog
 
 - Fixed issue with handlers not allowing new Plone sites to be created.
   [davidjb]
-- Add auto complete function to FoR and SEO code.
+- Add auto complete function to FoR and SEO code. [Jerry]
+- Hide user account in association tab (dataset view). [Jerry]
 
 
 1.0 (2011-08-03)

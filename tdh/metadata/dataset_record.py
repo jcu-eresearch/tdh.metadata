@@ -33,7 +33,8 @@ from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.browser import anzsrc_codes
-from tdh.metadata.sources import anzsrc_csv
+from tdh.metadata.sources import anzsrc_csv 
+
 
 
 class IParty(Interface):
@@ -620,7 +621,8 @@ class DatasetRecordBaseForm(object):
 
     def datagridInitialise(self, subform, widget):
         if 'user_uid' in subform.fields:
-            subform.fields['user_uid'].widgetFactory = AutocompleteFieldWidget
+            subform.fields['user_uid'].widgetFactory = widgets.PersonAutocompleteFieldWidget
+
 	#If want to disable autocomplete for FoR and SEO codes, delete if sentences below
         if 'code' in subform.fields:
             subform.fields['code'].widgetFactory = AutocompleteFieldWidget
@@ -649,6 +651,12 @@ class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
     grok.template('addform')
     form.wrap()
 
+class DatasetRecordViewForm(DatasetRecordBaseForm, dexterity.DisplayForm):
+    grok.implements(IDatasetForm)
+    grok.context(IDatasetRecord)
+    grok.template('view')
+    form.wrap()
+
 #Error messages
 @form.error_message(widget=IDataGridField, error=WrongContainedType)
 def dgfFormMoreHelpfulError(value):
@@ -671,7 +679,7 @@ def moreHelpfulError(value):
 # of this type by uncommenting the grok.name line below or by
 # changing the view class name and template filename to View / view.pt.
 
-class View(dexterity.DisplayForm):
+class View(DatasetRecordBaseForm,dexterity.DisplayForm):
     grok.context(IDatasetRecord)
     grok.require('zope2.View')
     grok.name('view')

@@ -22,6 +22,13 @@
         template="widget_templates/anzsrc_code_datagridfield_input.pt"
         />
 
+    <z3c:widgetTemplate
+        mode="display"
+        widget=".widgets.PersonAutocompleteSelectionWidget"
+        layer="plone.app.z3cform.interfaces.IPloneFormLayer"
+        template="widget_templates/person_autocomplete_display.pt"
+        />
+
     <browser:page
         name="ploneform-render-widget"
         for=".widgets.IHtmlAttributesWidget"
