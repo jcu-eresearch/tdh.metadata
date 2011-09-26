@@ -4,6 +4,8 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Added note to readme about new GitHub location.
+  [davidjb]
 - Fixed form wrapping to correctly wrap forms within a Plone context
   [davidjb]
 - Fixed issue with handlers not allowing new Plone sites to be created.
