@@ -33,7 +33,7 @@ from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
         validation, vocabularies, widgets
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.browser import anzsrc_codes
-from tdh.metadata.sources import anzsrc_csv 
+from tdh.metadata.sources import anzsrc_csv
 
 
 
@@ -636,7 +636,7 @@ class DatasetRecordAddForm(DatasetRecordBaseForm, dexterity.AddForm):
     grok.implements(IDatasetForm)
     grok.name('tdh.metadata.datasetrecord')
     grok.template('addform')
-    form.wrap(False)
+    form.wrap(True)
 
 #    form.mode(**{'plone.app.versioningbehavior.behaviors.IVersionable.changeNote': 'hidden'})
 #    form.mode(**{'IVersionable.changeNote': 'hidden'})
@@ -649,13 +649,13 @@ class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
     grok.implements(IDatasetForm)
     grok.context(IDatasetRecord)
     grok.template('addform')
-    form.wrap()
+    form.wrap(True)
 
 class DatasetRecordViewForm(DatasetRecordBaseForm, dexterity.DisplayForm):
     grok.implements(IDatasetForm)
     grok.context(IDatasetRecord)
     grok.template('view')
-    form.wrap()
+    form.wrap(True)
 
 #Error messages
 @form.error_message(widget=IDataGridField, error=WrongContainedType)
