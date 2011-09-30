@@ -204,7 +204,7 @@ def createActivityAndRegistry(node, id, activity_record):
     #them.
     keyword_sources = {
         'anzsrc-for': activity_record.for_codes,
-        'anzsrt-seo': activity_record.seo_codes,
+        'anzsrc-seo': activity_record.seo_codes,
         'local': activity_record.keywords
     }
     rifcs_activity_keywords = []

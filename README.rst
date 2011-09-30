@@ -297,4 +297,8 @@ Bug reports and suggestions for improvement are welcomed at the contact address
 provided within this package.  If you require more information about the
 integration of this package into a new installation, refer to the same address.
 
+The source code for this package is available on GitHub at
+https://github.com/jcu-eresearch/tdh.metadata , where developers are invited
+to contribute. 
+
 

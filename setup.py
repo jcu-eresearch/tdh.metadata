@@ -6,8 +6,8 @@ version = '1.1dev'
 setup(name='tdh.metadata',
       version=version,
       description="Tropical Data Hub Metadata Infrastructure",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=open("README.rst").read() + "\n" +
+                       open(os.path.join("docs", "HISTORY.rst")).read(),
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
@@ -15,8 +15,8 @@ setup(name='tdh.metadata',
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
         ],
-      keywords='tdh portal metadata dexterity',
-      author='JCU eResearch',
+      keywords='tdh portal metadata dexterity plone rif-cs ands qcif',
+      author='JCU eResearch Centre',
       author_email='eresearch@jcu.edu.au',
       url='http://eresearch.jcu.edu.au/',
       license='GPL version 2',
