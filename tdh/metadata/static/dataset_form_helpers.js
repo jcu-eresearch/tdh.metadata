@@ -1,3 +1,28 @@
+//Function used for check date. Made for calendarClickBind function
+function checkDate(calYear,calMonth,calDay) {
+    if(calYear>1900&&calYear<2999)
+        if(calMonth>-1&&calMonth<12)
+            if(calDay>0&&calDay<32)
+                return true;
+    return false;
+}
+
+//Function used for make sure pop-up calendar have the same value with date input field 
+function calendarClickBind(prefix) {
+
+$("#formfield-"+prefix).find(".caltrigger").bind("click",function(){
+
+calDay=($("#"+prefix+"-day").val());
+calMonth=($("#"+prefix+"-month").val())-1;
+calYear=($("#"+prefix+"-year").val());
+if(checkDate(calYear,calMonth,calDay))
+    $("#"+prefix+"-calendar").data("dateinput").setValue(calYear,calMonth,calDay);
+else
+    $("#"+prefix+"-calendar").data("dateinput").today();
+});
+
+}
+
 (function($) {
 
     loadCodes = function(thisObj, id, type, level){
@@ -55,7 +80,9 @@
                     $('input[name=form.widgets.research_themes:list]').not(':last').attr("checked", false);
                 }
         );
-	
+
+        calendarClickBind("form-widgets-temporal_coverage_start");
+        calendarClickBind("form-widgets-temporal_coverage_end");
     });
 
 })(jQuery);
