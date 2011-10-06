@@ -22,7 +22,7 @@ def vocabularyFromAnzsrcCodeFile(filename):
 RELATIONSHIPS = (
     (u"isManagedBy", u"Is Managed By"),
     (u"isOwnedBy", u"Is Owned By"),
-    (u"hasAssociationWith", u"Is Associated With"),
+    (u"hasAssociationWith", u"Has Association With"),
 )
 RELATIONSHIP_VOCAB = vocabularyFromPairs(RELATIONSHIPS)
 

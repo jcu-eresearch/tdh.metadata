@@ -1,5 +1,6 @@
 from datetime import datetime
 import jpype
+import types
 from tdh.metadata import config, sources, utils
 
 
@@ -76,11 +77,18 @@ def createAndAddRelatedObjects(collection, relations, related_attribute,
             #Create the RelatedObject and specify the relationship as either
             #an attribute of the result, or just the passed in string if the
             #attribute doesn't exist.
-            related_object = createRelatedObject(
-                node=collection,
-                key=record[1],
-                relationship=getattr(record[0], relationship, relationship)
-            )
+            if type(relation) is types.DictType:
+                related_object = createRelatedObject(
+                    node=collection,
+                    key=record[1],
+                    relationship=relation.get(relationship,relationship)
+                )
+            else:
+                related_object = createRelatedObject(
+                    node=collection,
+                    key=record[1],
+                    relationship=getattr(record[0],relationship,relationship)
+                )
         collection.addRelatedObject(related_object)
 
 def createRegistryObject(node, key):
