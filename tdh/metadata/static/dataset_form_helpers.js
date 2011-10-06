@@ -12,6 +12,7 @@ function calendarClickBind(prefix) {
 
 $("#formfield-"+prefix).find(".caltrigger").bind("click",function(){
 
+$("#"+prefix+"-calendar").data("dateinput").hide();
 calDay=($("#"+prefix+"-day").val());
 calMonth=($("#"+prefix+"-month").val())-1;
 calYear=($("#"+prefix+"-year").val());
@@ -19,6 +20,7 @@ if(checkDate(calYear,calMonth,calDay))
     $("#"+prefix+"-calendar").data("dateinput").setValue(calYear,calMonth,calDay);
 else
     $("#"+prefix+"-calendar").data("dateinput").today();
+$("#"+prefix+"-calendar").data("dateinput").show();
 });
 
 }
