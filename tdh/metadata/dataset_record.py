@@ -138,8 +138,10 @@ class IDatasetRecord(form.Schema):
     form.widget(descriptions=DataGridFieldFactory)
     descriptions = schema.List(
         title=_(u"Descriptions"),
-        description=_(u"Enter description information regarding for this data \
-                        record."),
+        description=_(u"Enter description information regarding this data \
+                        record. Please create a brief (1-2 sentences) \
+                        description for the lay-person and a more detailed \
+                        Full description for people working in your field. "),
         value_type=DictRow(
             title=_(u"Description"),
             schema=IDatasetDescription,

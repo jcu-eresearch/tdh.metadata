@@ -23,6 +23,8 @@ RELATIONSHIPS = (
     (u"isManagedBy", u"Is Managed By"),
     (u"isOwnedBy", u"Is Owned By"),
     (u"hasAssociationWith", u"Has Association With"),
+    (u"hasCollector", u"Has been Collected by"),
+    (u"isEnrichedBy", u"Is Enriched By"),
 )
 RELATIONSHIP_VOCAB = vocabularyFromPairs(RELATIONSHIPS)
 
