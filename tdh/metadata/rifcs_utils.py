@@ -305,8 +305,6 @@ def createCollectionAndRegistry(node, context):
          'value': context.seo_codes},
         {'type': 'local',
          'value': context.keywords},
-        {'type': 'local',
-         'value': [context.data_type,]},
     ]
     addSubjectsToObject(collection, keyword_types)
 
@@ -322,8 +320,8 @@ Related JCU Research Themes:
 
     descriptions = context.descriptions + [
         {'type': 'accessRights',
-         'value': 'Access Restrictions: %s' % context.access_restrictions},
-        {'type': 'accessRights',
+         'value': '%s' % context.access_restrictions},
+        {'type': 'rights',
          'value': 'Licensing: %s' % context.licensing},
         {'type': 'rights',
          'value': context.legal_rights},
