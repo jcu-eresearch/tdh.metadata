@@ -364,7 +364,7 @@ class IDatasetRecord(form.Schema):
                     field autocompletes and you can add new keywords."),
       required=False,
       value_type=schema.Choice(
-            source=sources.ResearchKeywordQuerySourceFactory(),
+            source=sources.research_keywords_query_source,
             ),
       default=[],
     )

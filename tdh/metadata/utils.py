@@ -79,6 +79,10 @@ def createAndRegisterSAMapper(db_connector, table_name, db_schema,
     These get passed into the table creator as the "override" technique.
     See http://www.sqlalchemy.org/docs/core/schema.html#overriding-reflected-columns for more info.
     """
+
+    if db_connector=='':
+        return
+
     sa_wrapper = getSAWrapper(db_connector)
     table = Table(table_name,
                   sa_wrapper.metadata,
