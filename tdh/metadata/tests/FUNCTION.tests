@@ -1,0 +1,11 @@
+====================
+A functional doctest
+====================
+
+Test if the tests is running well.
+
+    >>> 1 == 1
+    True
+
+End of the test
+

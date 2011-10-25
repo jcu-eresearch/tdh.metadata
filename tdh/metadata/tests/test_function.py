@@ -3,6 +3,8 @@ import unittest
 
 from Testing import ZopeTestCase as ztc
 
+from App.config import setConfiguration
+
 from Products.Five import zcml
 from Products.PloneTestCase import PloneTestCase as ptc
 from Products.PloneTestCase.layer import PloneSite
@@ -15,8 +17,8 @@ OPTION_FLAGS = doctest.NORMALIZE_WHITESPACE | \
 
 ptc.setupPloneSite(products=['tdh.metadata'])
 
-
 class TestCase(ptc.PloneTestCase):
+
 
     class layer(PloneSite):
 
@@ -45,7 +47,7 @@ def test_suite():
 
         # Integration tests that use PloneTestCase
         ztc.ZopeDocFileSuite(
-            'INTEGRATION.txt', 
+            'tests/FUNCTION.tests', 
             package='tdh.metadata',
             optionflags = OPTION_FLAGS,
             test_class=TestCase),
