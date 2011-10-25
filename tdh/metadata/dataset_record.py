@@ -9,15 +9,15 @@ from z3c.form.browser.radio import RadioFieldWidget
 from z3c.form.browser.checkbox import CheckBoxFieldWidget
 from z3c.form.interfaces import IWidget
 
-from Products.GenericSetup.interfaces import IDAVAware
+from Products.statusmessages.interfaces import IStatusMessage
 from plone.autoform.interfaces import IFormFieldProvider
 from plone.dexterity.interfaces import IDexterityContent
 from plone.directives import dexterity, form
 from plone.formwidget.autocomplete import AutocompleteMultiFieldWidget, \
         AutocompleteFieldWidget
 from plone.indexer import indexer
-
 from plone.namedfile.field import NamedBlobFile
+from plone.rfc822.interfaces import IPrimaryField
 from plone.uuid.interfaces import IUUID
 
 from collective import dexteritytextindexer
@@ -444,6 +444,7 @@ class IDatasetRecord(form.Schema):
     )
 
 alsoProvides(IDatasetRecord, IFormFieldProvider)
+alsoProvides(IDatasetRecord['dataset_data'], IPrimaryField)
 
 # Validators
 @form.validator(field=IDatasetRecord['for_codes'])
@@ -495,8 +496,9 @@ grok.global_adapter(descriptionIndexer, name="Description")
 
 def getInnerItems(list, fieldName):
     sublist = []
-    for item in list:
-        sublist.append(item[fieldName])
+    if list:
+        for item in list:
+           sublist.append(item[fieldName])
     return sublist
 
 @indexer(IDatasetRecord)
@@ -508,9 +510,11 @@ def keywordsIndexer(obj):
 #        keywords_list.append(seo_code['code'])
 #    for for_code in obj.for_codes:
 #        keywords_list.append(for_code['code'])
-    keywords_list += obj.research_themes
-    keywords_list += obj.keywords
-    if keywords_list is None: return None
+    if obj.research_themes:
+        keywords_list += obj.research_themes
+    if obj.keywords:
+        keywords_list += obj.keywords
+
     return tuple(keywords_list)
 grok.global_adapter(keywordsIndexer, name="Subject")
 
@@ -562,18 +566,28 @@ grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
 # in separate view classes.
 
 class DatasetRecord(dexterity.Item):
-    grok.implements(IDatasetRecord, interfaces.IRifcsRenderable, IDAVAware)
+    grok.implements(IDatasetRecord, interfaces.IRifcsRenderable)
     grok.provides(IDatasetRecord)
 
     # Add your class methods and properties here
     __id = None
     @property
     def id(self):
-        return self.__id and self.__id or IUUID(self)
+        _id = None
+        if hasattr(self, '__id') and self.__id:
+            _id = self.__id
+        else:
+            _id = IUUID(self)
+
+        return _id
 
     @id.setter
     def id(self, value):
         self.__id = value
+
+    def PUT(self, REQUEST=None, RESPONSE=None):
+        super(DatasetRecord, self).PUT(REQUEST, RESPONSE)
+        self.dataset_data.filename = unicode(REQUEST.steps[-2])
 
 
 class IDatasetForm(interfaces.ITDHForm):
@@ -653,11 +667,6 @@ class DatasetRecordEditForm(DatasetRecordBaseForm, dexterity.EditForm):
     grok.template('addform')
     form.wrap(True)
 
-class DatasetRecordViewForm(DatasetRecordBaseForm, dexterity.DisplayForm):
-    grok.implements(IDatasetForm)
-    grok.context(IDatasetRecord)
-    grok.template('view')
-    form.wrap(True)
 
 #Error messages
 @form.error_message(widget=IDataGridField, error=WrongContainedType)
@@ -687,13 +696,13 @@ class View(DatasetRecordBaseForm,dexterity.DisplayForm):
     grok.name('view')
     grok.template('view')
 
-#    form.widget(smarties=AutocompleteFieldWidget)
-#    smarties = schema.Choice(
-#        title=_(u"User ID"),
-#        description=_(u"Enter your JCU user ID. This field auto-completes."),
-#        required=True,
-#        vocabulary=u"plone.principalsource.Users",
-#    )
+    def update(self):
+        if not self.context.temporal_coverage_start:
+            messages = IStatusMessage(self.request)
+            messages.addStatusMessage(u"This metadata is not complete. Use the \
+                                      Edit tab to complete the information.",
+                                      type="warning")
+        super(View, self).update()
 
 class ListFieldConverter(DefaultDexterityTextIndexFieldConverter):
     grok.adapts(IDexterityContent, schema.interfaces.IList, IWidget)
