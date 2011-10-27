@@ -48,5 +48,5 @@ setup(name='tdh.metadata',
       """,
       setup_requires=["PasteScript", "wikir"],
       paster_plugins = ["ZopeSkel"],
-
+      extras_require = {'test': ['plone.testing','plone.app.testing',]},
       )

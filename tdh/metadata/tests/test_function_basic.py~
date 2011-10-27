@@ -11,6 +11,8 @@ from Products.PloneTestCase.layer import PloneSite
 from Products.PloneTestCase.layer import onsetup
 
 import tdh.metadata
+from tdh.metadata.testing import TDH_METADATA_FUNCTIONAL_TESTING
+
 
 OPTION_FLAGS = doctest.NORMALIZE_WHITESPACE | \
                doctest.ELLIPSIS
@@ -19,6 +21,7 @@ ptc.setupPloneSite(products=['tdh.metadata'])
 
 class TestCase(ptc.PloneTestCase):
 
+    app = TDH_METADATA_FUNCTIONAL_TESTING
 
     class layer(PloneSite):
 
@@ -26,6 +29,7 @@ class TestCase(ptc.PloneTestCase):
         def setUp(cls):
             zcml.load_config('configure.zcml',
               tdh.metadata)
+
 
         @classmethod
         def tearDown(cls):
