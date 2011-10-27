@@ -1,0 +1,45 @@
+=================================
+Basic functional doctest
+Test Content:
+1. If the tests is running well
+2. If the server is runing well
+3. If the login is runing well
+=================================
+
+Test if the tests is running well.
+
+    >>> print "If this sentence is showing, the test is not running well"
+    If this sentence is showing, the test is not running well
+
+Import and create the browser. Get the url of website.
+
+    >>> from plone.testing.z2 import Browser
+    >>> browser = Browser(app)
+    >>> portal_url = self.portal.absolute_url()
+
+Show all errors in error_log.
+
+    >>> self.portal.error_log._ignored_exceptions = ()
+
+Test is the server is running
+
+    >>> browser.open(portal_url)
+    >>> "Home" in browser.contents
+    True
+
+
+Login into the website.
+
+    >>> from Products.PloneTestCase.setup import portal_owner, default_password
+    >>> browser.open(portal_url+'/login')
+    >>> browser.getControl(name='__ac_name').value = portal_owner
+    >>> browser.getControl(name='__ac_password').value = default_password
+    >>> browser.getControl(name='submit').click()
+    
+Confirm message of login.
+
+    >>> "You are now logged in" in browser.contents
+    True
+
+End of the test
+
