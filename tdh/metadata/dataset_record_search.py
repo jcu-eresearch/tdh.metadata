@@ -56,7 +56,7 @@ class IDatasetRecordSearch(form.Schema):
                       with this record."),
         value_type=schema.Choice(
             title=_(u"Party"),
-            source=sources.UserQuerySourceFactory(),
+            source=sources.user_query_source,
             required=False,
         ),
         required=False,
@@ -68,7 +68,7 @@ class IDatasetRecordSearch(form.Schema):
         description=_(u"Enter the name of the activity you are interesed in"),
         value_type=schema.Choice(
             title=_(u"Activity"),
-            source=sources.ActivitiesQuerySourceFactory(),
+            source=sources.activities_query_source,
             required=False,
         ),
         required=False,

@@ -1,18 +1,22 @@
 
+import webdav
 from five import grok
 from zope import schema, interface
 from zope.security import checkPermission
 from zExceptions import Unauthorized
 from z3c.form import group, field
+from Products.BTreeFolder2.BTreeFolder2 import _marker
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
+from plone.dexterity.utils import createContentInContainer
 from plone.directives import dexterity, form
 
-from Acquisition import aq_inner
+from Acquisition import aq_inner, aq_base
 from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
 
 from tdh.metadata import rifcs_utils
 from tdh.metadata.browser.rifcs import RifcsView
+from tdh.metadata.dataset_record import IDatasetRecord
 from tdh.metadata.interfaces import IRifcsRenderable
 from tdh.metadata import MessageFactory as _
 
@@ -43,6 +47,43 @@ class DataRecordRepository(dexterity.Container):
     grok.provides(IDataRecordRepository)
 
     # Add your class methods and properties here
+    def _webdavChangeId(self, id):
+        if type(aq_base(self.REQUEST.PARENTS[0])) \
+           is webdav.NullResource.NullResource:
+            id = self.REQUEST.PARENTS[0].__name__
+        return id
+
+    def _setOb(self, id, default=_marker):
+        return super(DataRecordRepository, self)._setOb(
+            self._webdavChangeId(id), default)
+
+    def _getOb(self, id, default=_marker):
+        return super(DataRecordRepository, self)._getOb(
+            self._webdavChangeId(id), default)
+
+    def _delOb(self, id):
+        return super(DataRecordRepository, self)._delOb(
+            self._webdavChangeId(id))
+
+
+    def PUT_factory(self, name, contentType, body):
+        """Handle PUT requests into this type of container.
+
+        The container only accepts one type of content so any binary PUT
+        requests should get shoehorned into that type. This method mirrors
+        what the parent class does, except doesn't check the mimetype to
+        determine the portal type (as we know it already).
+        """
+        new_obj = createContentInContainer(self, 'tdh.metadata.datasetrecord',
+                                           title=name)
+        obj = aq_base(self._getOb(new_obj.id))
+        self._delObject(obj.id)
+
+        # Hack to change what the NullResource object thinks our target
+        # ID should actually be.
+        self.REQUEST.PARENTS[0].__name__ = obj.id
+
+        return obj
 
 
 # View class
