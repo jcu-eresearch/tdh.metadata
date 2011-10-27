@@ -4,6 +4,11 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Allow WebDAV uploads into the repository folder types.  File uploads into 
+  these areas will see their files wrapped inside a data record, ready for
+  metadata to be added.  Various changes made to handle records that are 
+  empty and have no other attributes.
+  [davidjb]
 - Added note to readme about new GitHub location.
   [davidjb]
 - Fixed form wrapping to correctly wrap forms within a Plone context
