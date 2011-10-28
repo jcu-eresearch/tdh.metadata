@@ -36,8 +36,6 @@ from tdh.metadata import MessageFactory as _
 from tdh.metadata.browser import anzsrc_codes
 from tdh.metadata.sources import anzsrc_csv
 
-
-
 class IParty(Interface):
     relationship = schema.Choice(
         title=_(u"Relationship to Record"),
@@ -508,6 +506,14 @@ alsoProvides(IDatasetRecord, IFormFieldProvider)
 alsoProvides(IDatasetRecord['dataset_data'], IPrimaryField)
 
 # Validators
+@form.validator(field=IDatasetRecord['research_themes'])
+def validateResearchThemes(value):
+    """Ensure there are at least 1 theme or 'not aligned' selected in checkbox
+    """
+    if len(value) == 0:
+        raise Invalid(_(u"You must select one or more themes or select 'not aligned'"))
+
+
 @form.validator(field=IDatasetRecord['for_codes'])
 def validateForCodes(value):
     """Ensure there are at least 1 and at most 3 codes and values add to 100.

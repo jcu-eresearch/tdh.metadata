@@ -1,0 +1,160 @@
+==============================================
+Dataset Record functional doctest
+Test Content:
+1. Error report for missing required field.
+2. Add a form.
+3. Check the if the form added correctly.
+==============================================
+
+Import and create the browser. Get the url of website.
+
+    >>> from plone.testing.z2 import Browser
+    >>> browser = Browser(app)
+    >>> portal_url = self.portal.absolute_url()
+
+Show all errors in error_log.
+
+    >>> self.portal.error_log._ignored_exceptions = ()
+
+Login into the website.
+
+    >>> from Products.PloneTestCase.setup import portal_owner, default_password
+    >>> browser.open(portal_url+'/login')
+    >>> browser.getControl(name='__ac_name').value = portal_owner
+    >>> browser.getControl(name='__ac_password').value = default_password
+    >>> browser.getControl(name='submit').click()
+    
+Confirm message of login.
+
+    >>> "You are now logged in" in browser.contents
+    True
+
+Open add dataset record page.
+
+    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
+    >>> "Add Dataset Record" in browser.contents
+    True
+
+Submit an error form, check all required fields's error message is showing.
+
+    >>> browser.getControl(name='form.buttons.save').click()
+    >>> "There were some errors." in browser.contents
+    True
+
+Check title.
+
+    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
+    >>> "Add Dataset Record" in browser.contents
+    True
+
+    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-year').value = "2010"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-year').value = "2011"
+    >>> browser.getControl(name='form.buttons.save').click()
+    >>> "Required input is missing." in browser.contents
+    True
+
+Check start date.
+
+    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
+    >>> "Add Dataset Record" in browser.contents
+    True
+
+    >>> browser.getControl(name='form.widgets.title').value = "Title for test"
+    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-year').value = "2011"
+    >>> browser.getControl(name='form.buttons.save').click()
+    >>> "Required input is missing." in browser.contents
+    True
+
+Check end date.
+
+    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
+    >>> "Add Dataset Record" in browser.contents
+    True
+
+    >>> browser.getControl(name='form.widgets.title').value = "Title for test"
+    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-year').value = "2010"
+    >>> browser.getControl(name='form.buttons.save').click()
+    >>> "Required input is missing." in browser.contents
+    True
+
+Check For Code.
+
+    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
+    >>> "Add Dataset Record" in browser.contents
+    True
+
+    >>> browser.getControl(name='form.widgets.title').value = "Title for test"
+    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-year').value = "2010"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-year').value = "2011"
+    >>> browser.getControl(name='form.buttons.save').click()
+    >>> "You must have at least 1 FoR code defined." in browser.contents
+    True
+
+Check for Research Themes
+
+    >>> "You must select one or more themes or select 'not aligned'" in browser.contents
+    True
+
+Try to add an right form. First, fill the add dataset record form.
+
+    >>> browser.getControl(name='form.widgets.title').value = "Title for test"
+    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_start-year').value = "2010"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-day').value = "01"
+    >>> browser.getControl(name='form.widgets.temporal_coverage_end-year').value = "2011"
+
+Fill the search for Related Parties.
+
+    >>> browser.getControl(name='form.widgets.related_parties.AA.widgets.user_uid.widgets.query').value = "1"
+    >>> browser.getControl(name='form.widgets.related_parties.AA.widgets.user_uid.buttons.search').click()
+
+Test if the search result is shown. Then choose the first user.
+
+    >>> "users-test-1" in browser.contents
+    True
+    >>> browser.getControl(label='users-test-1').click()
+
+Fill the search for FoR code.
+
+    >>> browser.getControl(name='form.widgets.for_codes.AA.widgets.code.widgets.query').value = "200321 - Te Reo Maori (Maori Language)"
+    >>> browser.getControl(name='form.widgets.seo_codes.AA.widgets.code.buttons.search').click()
+
+Test if the search result is shown. Then choose the one FoR code.
+
+    >>> "200321 - Te Reo Maori (Maori Language)" in browser.contents
+    True
+    >>> browser.getControl(label='200321 - Te Reo Maori (Maori Language)').click()
+
+    >>> browser.getControl(name='form.widgets.for_codes.AA.widgets.value').value = "50"
+
+    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.code.widgets.query').value = "140104 - Microeconomic Theory"
+    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.code.buttons.search').click()
+    >>> "140104 - Microeconomic Theory" in browser.contents
+    True
+    >>> browser.getControl(label='140104 - Microeconomic Theory').click()
+    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.value').value="50"
+
+    >>> browser.getControl(label='Tropical Ecosystems, Conservation and Climate Change').click()
+
+Submit the form
+
+    >>> browser.getControl(name='form.buttons.save').click()
+
+    >>> "There were some errors." in browser.contents
+    False
+    >>> "Item created" in browser.contents
+    True
+
+End of the test
+
