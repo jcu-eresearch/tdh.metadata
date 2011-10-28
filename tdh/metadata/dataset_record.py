@@ -1,4 +1,5 @@
 from DateTime import DateTime
+import time
 
 from five import grok
 from zope import schema
@@ -110,6 +111,34 @@ class ICoinvestigator(Interface):
         required=True,
     )
 
+class IPublication(Interface):
+    pub_id_type = schema.Choice(
+        title=_(u"Type"),
+        required=True,
+        vocabulary=vocabularies.PUBLICATION_VOCAB,
+    )
+
+    pub_id = schema.TextLine(
+        title=_(u"Identifier"),
+        required=True,
+    )
+
+    pub_title = schema.TextLine(
+        title=_(u"Title"),
+        required=False,
+    )
+
+class IWebsite(Interface):
+
+    site_url = schema.TextLine(
+        title=_(u"URL"),
+        required=True,
+    )
+
+    site_note = schema.TextLine(
+        title=_(u"Note"),
+        required=False,
+    )
 
 # Interface class; used to define content-type schema.
 
@@ -160,13 +189,18 @@ class IDatasetRecord(form.Schema):
       vocabulary=vocabularies.COLLECTION_TYPES_VOCAB,
     )
 
-    data_type = schema.Choice(
+    form.widget(data_type=CheckBoxFieldWidget)
+    data_type = schema.List(
         title=_(u"Type of Data"),
-        values = ["Raw or primary data",
-                  "Processed data",
-                  "Published data",
-                 ],
+        description=_(u"Select one or more of the following:"),
+        value_type=schema.Choice(
+            values = ["Raw or primary data",
+                      "Processed data",
+                      "Published data",
+                     ],
+        )
     )
+
 
     access_restrictions = schema.Choice(
       title=_(u"Access Restrictions"),
@@ -201,7 +235,8 @@ class IDatasetRecord(form.Schema):
 
     temporal_coverage_end = schema.Date(
       title=_(u"Research End Date"),
-      description=_(u"Enter the date you finished or will finish the research."),
+      description=_(u"Enter the date you finished or will finish the research. Leave blank is research is ongoing."),
+      required=False,
     )
 
     @invariant
@@ -267,7 +302,9 @@ class IDatasetRecord(form.Schema):
                   label=u"Associations",
                   fields=['related_parties',
                           'related_activities',
-                          'coinvestigators'],
+                          'coinvestigators',
+			  'related_publications',
+		          'related_websites'],
                  )
 
     form.widget(related_parties=DataGridFieldFactory)
@@ -306,6 +343,30 @@ class IDatasetRecord(form.Schema):
         ),
         required=False,
         default=[],
+    )
+
+    form.widget(related_publications=DataGridFieldFactory)
+    related_publications = schema.List(
+	title=_(u"Related Publications"),
+	description=_(u"Enter details about publications that relate to this dataset. You can enter a DOI and/or a URL"),
+	value_type=DictRow(
+            title=_(u"Publication"),
+	    schema=IPublication,
+	),
+	required=False,
+	default=[],
+    )
+
+    form.widget(related_websites=DataGridFieldFactory)
+    related_websites = schema.List(
+	title=_(u"Related Websites"),
+	description=_(u"Enter details about websites that relate to this dataset. You can enter a URL and a note stating the connection."),
+	value_type=DictRow(
+            title=_(u"Website"),
+	    schema=IWebsite,
+	),
+	required=False,
+	default=[],
     )
 
     #Keywords fieldset
@@ -557,6 +618,8 @@ grok.global_adapter(temporalCoverageStartIndexer, name="temporal_coverage_start"
 
 @indexer(IDatasetRecord)
 def temporalCoverageEndIndexer(obj):
+    if obj.temporal_coverage_end is None:
+	return DateTime('2999-12-31')
     return DateTime(obj.temporal_coverage_end.isoformat())
 grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
 

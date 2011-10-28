@@ -88,6 +88,10 @@ input#form-widgets-related_activities-widgets-query {
     padding-bottom: 1em;
 }
 
+.indent-20 {
+    padding-left: 20px;
+}
+
 /* footer styling */
 div.tdhfooterWrapper .left-image {
     float: left;

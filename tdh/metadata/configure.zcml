@@ -34,6 +34,15 @@
       profile="tdh.metadata:default"
       />
 
+  <genericsetup:upgradeStep
+      source="14"
+      destination="15"
+      title="Change data_type list"
+      description="Changes existing data_type fields from single values to be a list"
+      handler="tdh.metadata.setuphandlers.convertDataTypesToList"
+      profile="tdh.metadata:default"
+      />
+
   <genericsetup:importStep
        name="tdh.metadata_configureRepository"
        title="Configure TDH metadata repository after installation"

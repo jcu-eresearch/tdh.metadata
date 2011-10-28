@@ -32,7 +32,12 @@
   <div id="dataset-description-text" class="dataset-section">
       <h3>Description</h3>
       <div tal:condition="here/descriptions" tal:content="structure view/w/descriptions/render"></div>
-      <p tal:condition="context/data_type"> This collection consists of <span tal:replace="context/data_type"></span>.</p>
+      <p> This collection contains: 
+          <tal:dataType tal:repeat="data_type here/data_type">
+          <span tal:replace="data_type"></span>
+          <span tal:condition="not:repeat/data_type/end">, </span>
+          <span tal:condition="repeat/data_type/end">. </span>
+          </tal:dataType>
   </div>
   <div id="dataset-logo" >
   </div>
@@ -40,14 +45,25 @@
   <!-- Coverage -->
   <div class="dataset-section">
       <h3>Coverage</h3>
-      <tal:temporal-coverage condition="context/temporal_coverage_start">
+      <tal:temporal-coverage tal:condition="context/temporal_coverage_start">
       <h4>Temporal Coverage</h4>
+      <p class="indent-20">
       <b>Start Date:</b> <span tal:replace="python:context.temporal_coverage_start.strftime('%d-%b-%Y')"></span><br />
-      <b>End Date:</b> <span tal:replace="python:context.temporal_coverage_end.strftime('%d-%b-%Y')"></span>
+      <b>End Date:</b> 
+      <tal:end_date tal:condition="context/temporal_coverage_end">
+        <span tal:replace="python:context.temporal_coverage_end.strftime('%d-%b-%Y')"></span>
+        </tal:end_date>
+        <tal:ongoing tal:condition="not: context/temporal_coverage_end">
+        Ongoing
+        </tal:ongoing>
+        </p>
       </tal:temporal-coverage>
-      <h4>Spatial Coverage</h4>
+
+      <h4 tal:define="hasName context/spatial_coverage_text;
+		      hasCoords context/spatial_coverage_coords;"
+	tal:condition="python: hasName and hasCoords">Spatial Coverage</h4>
       <div tal:condition="context/spatial_coverage_text" tal:content="context/spatial_coverage_text"></div>
-      <div tal:content="structure view/w/spatial_coverage_coords/render"></div>
+      <div tal:condition="context/spatial_coverage_coords" tal:content="structure view/w/spatial_coverage_coords/render"></div>
   </div>
 
   <!-- Keywords -->
@@ -77,11 +93,15 @@
   <!-- Associations -->
   <div class="dataset-section">
       <h3>Associations</h3>
-      <div tal:condition="here/related_parties" tal:content="structure view/w/related_parties/render"></div>
+      <b>Parties</b>:
+      <div class="indent-20" tal:condition="here/related_parties" tal:content="structure view/w/related_parties/render"></div>
+      <tal:activities tal:condition="here/related_activities">
       <b>Activities</b>: 
-          <div tal:condition="here/related_activities" tal:replace="structure view/w/related_activities/render"></div>
+          <div class="indent-20" tal:replace="structure view/w/related_activities/render"></div>
+          </tal:activities >
       <div tal:condition="here/coinvestigators" >
-          <p><b>Contributors</b>: 
+          <b>Contributors</b>: 
+          <p class="indent-20">
           <tal:coinvestigators tal:repeat="person here/coinvestigators">
           <span tal:replace="python: person.get('other','')"></span>
           <span tal:condition="not:repeat/person/end">, </span>

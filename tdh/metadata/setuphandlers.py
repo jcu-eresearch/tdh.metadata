@@ -7,6 +7,25 @@ from collective.geo.settings.interfaces import IGeoSettings, IGeoFeatureStyle
 
 from tdh.metadata.config import PROFILE_ID
 
+def convertDataTypesToList(context):
+    """Convert tdh.metadata.datasetrecord.data_type fields from singleton values
+    to a list.
+    
+    Walk the datasetrecord content types in the catalog and convert 
+    any data_type fields that are non-list elements to be lists"""
+
+    catalog = getToolByName(context, 'portal_catalog')
+    keyargs = {'portal_type':'tdh.metadata.datasetrecord'}
+    
+    ds_brains = catalog.searchResults(keyargs)
+    for ds_brain in ds_brains:
+        ds_record = ds_brain.getObject()
+        data_type = ds_record.data_type
+        if not isinstance(data_type,list):
+            ds_record.data_type = [data_type]
+            print "Updated: ", ds_record.absolute_url()
+
+
 def upgrade_by_reinstall(context):
     qi = getToolByName(context, 'portal_quickinstaller')
     qi.reinstallProducts(['tdh.metadata'])

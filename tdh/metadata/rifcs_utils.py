@@ -318,9 +318,17 @@ Related JCU Research Themes:
                research_themes='\n'.join(context.research_themes)
               )
 
+    #access description
+    open_access = u"If the data is not available via the provided link, please contact \
+            an associated party (preferrably the Manger is specified) for access."
+    if context.access_restrictions == u"Open Access":
+        access_rights = '%s\n%s' % (context.access_restrictions, open_access)
+    else:
+        access_rights = context.access_restrictions
+
     descriptions = context.descriptions + [
         {'type': 'accessRights',
-         'value': '%s' % context.access_restrictions},
+         'value': '%s' % access_rights},
         {'type': 'rights',
          'value': 'Licensing: %s' % context.licensing},
         {'type': 'rights',
@@ -337,11 +345,12 @@ Related JCU Research Themes:
         datetime_instance=context.temporal_coverage_start,
         type="dateFrom"
     )
-    addDateTimeToCoverage(
-        coverage,
-        datetime_instance=context.temporal_coverage_end,
-        type="dateTo"
-    )
+    if context.temporal_coverage_end:
+        addDateTimeToCoverage(
+            coverage,
+            datetime_instance=context.temporal_coverage_end,
+            type="dateTo"
+        )
 
     if context.spatial_coverage_text:
         coverage_spatial_text = coverage.newSpatial()
