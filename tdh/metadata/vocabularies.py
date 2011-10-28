@@ -20,13 +20,20 @@ def vocabularyFromAnzsrcCodeFile(filename):
     )
 
 RELATIONSHIPS = (
-    (u"isManagedBy", u"Is Managed By"),
-    (u"isOwnedBy", u"Is Owned By"),
-    (u"hasAssociationWith", u"Has Association With"),
-    (u"hasCollector", u"Has been Collected by"),
-    (u"isEnrichedBy", u"Is Enriched By"),
+    (u"isManagedBy", u"Managed by"),
+    (u"isOwnedBy", u"Owned by"),
+    (u"hasCollector", u"Aggregated by"),
+    (u"isEnrichedBy", u"Enriched by"),
+    (u"hasAssociationWith", u"Associated with"),
 )
 RELATIONSHIP_VOCAB = vocabularyFromPairs(RELATIONSHIPS)
+
+PUBLICATIONS = (
+	(u"doi", u"DOI"),
+	(u"uri", u"URL"),
+)
+
+PUBLICATION_VOCAB = vocabularyFromPairs(PUBLICATIONS)
 
 DESCRIPTIONS = (
     (u"brief", u"Brief"),
