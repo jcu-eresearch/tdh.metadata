@@ -136,25 +136,17 @@ Test if the search result is shown. Then choose the one FoR code.
     True
     >>> browser.getControl(label='200321 - Te Reo Maori (Maori Language)').click()
 
-    >>> browser.getControl(name='form.widgets.for_codes.AA.widgets.value').value = "50"
+    >>> browser.getControl(name='form.widgets.for_codes.AA.widgets.value').value = "100"
 
-    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.code.widgets.query').value = "140104 - Microeconomic Theory"
-    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.code.buttons.search').click()
-    >>> "140104 - Microeconomic Theory" in browser.contents
-    True
-    >>> browser.getControl(label='140104 - Microeconomic Theory').click()
-    >>> browser.getControl(name='form.widgets.for_codes.TT.widgets.value').value="50"
+Get the form to assign a fixed FoR code:
 
-    >>> browser.getControl(label='Tropical Ecosystems, Conservation and Climate Change').click()
+    >>> form = browser.getForm(index=0)
+    >>> form.submit()
 
 Submit the form
 
-    >>> browser.getControl(name='form.buttons.save').click()
-
     >>> "There were some errors." in browser.contents
     False
-    >>> "Item created" in browser.contents
-    True
 
 End of the test
 

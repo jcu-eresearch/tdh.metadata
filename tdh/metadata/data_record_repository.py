@@ -48,9 +48,10 @@ class DataRecordRepository(dexterity.Container):
 
     # Add your class methods and properties here
     def _webdavChangeId(self, id):
-        if type(aq_base(self.REQUEST.PARENTS[0])) \
-           is webdav.NullResource.NullResource:
-            id = self.REQUEST.PARENTS[0].__name__
+        if (hasattr(self.REQUEST,'PARENTS')):
+            if type(aq_base(self.REQUEST.PARENTS[0])) \
+               is webdav.NullResource.NullResource:
+                id = self.REQUEST.PARENTS[0].__name__
         return id
 
     def _setOb(self, id, default=_marker):
