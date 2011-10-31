@@ -70,20 +70,6 @@ Check start date.
     >>> "Required input is missing." in browser.contents
     True
 
-Check end date.
-
-    >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
-    >>> "Add Dataset Record" in browser.contents
-    True
-
-    >>> browser.getControl(name='form.widgets.title').value = "Title for test"
-    >>> browser.getControl(name='form.widgets.descriptions.AA.widgets.value').value = "Value for description"
-    >>> browser.getControl(name='form.widgets.temporal_coverage_start-day').value = "01"
-    >>> browser.getControl(name='form.widgets.temporal_coverage_start-year').value = "2010"
-    >>> browser.getControl(name='form.buttons.save').click()
-    >>> "Required input is missing." in browser.contents
-    True
-
 Check For Code.
 
     >>> browser.open(portal_url+'/data/++add++tdh.metadata.datasetrecord')
