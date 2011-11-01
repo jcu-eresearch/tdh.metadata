@@ -301,7 +301,7 @@ def createCollectionAndRegistry(node, context):
     keyword_types = [
         {'type': 'anzsrc-for',
          'value': context.for_codes},
-        {'type': 'anzsrt-seo',
+        {'type': 'anzsrc-seo',
          'value': context.seo_codes},
         {'type': 'local',
          'value': context.keywords},
