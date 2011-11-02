@@ -79,7 +79,7 @@ input#form-widgets-related_activities-widgets-query {
 .dataset-section td.datagridwidget-cell span.choice-field {
     font-weight: bold;
 }
-.dataset-section td.datagridwidget-cell span.choice-field:after {
+#dataset-description-text td.datagridwidget-cell span.choice-field:after {
     content: ": "
 }
 .dataset-section td.datagridwidget-cell { 
