@@ -76,6 +76,7 @@ input#form-widgets-related_activities-widgets-query {
     display: none;
 }
 
+
 .dataset-section td.datagridwidget-cell span.choice-field {
     font-weight: bold;
 }
@@ -86,6 +87,14 @@ input#form-widgets-related_activities-widgets-query {
     vertical-align: top; 
     padding-right: 1em; 
     padding-bottom: 1em;
+}
+
+tr.datagridwidget-row > td:first-child {
+    width: 20%;
+}
+
+div#keywords tr.datagridwidget-row > td:first-child {
+    width: auto;
 }
 
 .indent-20 {
@@ -128,4 +137,18 @@ body.jcu-red .collapsibleHeader {
 
 body.jcu-orange .collapsibleHeader {
     background-color: rgb(247,147,30) !important;
+}
+
+/* over-riding some openlayers styling */
+div.olControlMousePosition {
+    background-color: white;
+    padding-left: 2px;
+    padding-right: 2px;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    bottom: 25px;
+}
+
+.olControlAttribution {
+    bottom: 0px;
 }
