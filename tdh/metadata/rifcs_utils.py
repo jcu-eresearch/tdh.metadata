@@ -275,10 +275,18 @@ def createCollectionAndRegistry(node, context):
             address.addPhysical(physical_address)
 
         elif location['designation'] == 'Electronic':
-            electronic_address = address.newElectronic()
-            electronic_address.setValue(location['value'])
-            electronic_address.setType('other') #'url' is possible here too
-            address.addElectronic(electronic_address)
+            # Only electronic locations we want to send to RDA is the link to the
+            # metadata record (which is added in above) and an email address for the contact.
+            if location['type'] == 'other' and '@' in location['value']:
+                electronic_address = address.newElectronic()
+                electronic_address.setValue(location['value'])
+                electronic_address.setType('email') 
+                address.addElectronic(electronic_address)
+            elif location['type'] == 'url':
+                electronic_address = address.newElectronic()
+                electronic_address.setValue(location['value'])
+                electronic_address.setType('url') 
+                address.addElectronic(electronic_address)
 
         #Now add our location to the collection
         collection_location.addAddress(address)
@@ -376,7 +384,22 @@ Related JCU Research Themes:
     collection.addCoverage(coverage);
 
     #citationInfo - not implemented
-    #relatedInfo - not implemented
+
+    #relatedInfo - implemented for publications and websites
+    if context.related_publications:
+        for related_pub in context.related_publications:
+            related_info = collection.newRelatedInfo()
+            related_info.setIdentifier(related_pub['pub_id'], related_pub['pub_id_type'])
+            related_info.setTitle(related_pub['pub_title'])
+            collection.addRelatedInfo(related_info)
+
+    if context.related_websites:
+        for related_web in context.related_websites:
+            related_info = collection.newRelatedInfo()
+            related_info.setIdentifier(related_web['site_url'], 'uri')
+            related_info.setNote(relataed_web['site_note'])
+            collection.addRelatedInfo(related_info)
+
 
     #Extra metadata about the actual record itself
     collection.setDateAccessioned(\
