@@ -118,7 +118,6 @@
       <div tal:condition="hasPub">
           <b>Publications</b>
           <ul><tal:pub tal:repeat="pub here/related_publications">
-              <span tal:content="pub"></span>
               <li tal:condition="python: pub['pub_id_type'] == 'uri'">
               <a href="#" tal:attributes="href pub/pub_id" tal:content="pub/pub_title"></a>
               </li>
