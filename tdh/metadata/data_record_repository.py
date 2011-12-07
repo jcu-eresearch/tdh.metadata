@@ -138,7 +138,7 @@ class DataRecordRepositorySearchView(grok.View):
 class DataRecordRepositoryRifcsView(RifcsView):
     grok.context(IDataRecordRepository)
 
-    allowed_ips = ['130.56.60.96','130.56.62.108'] #ands-prod.anu.edu.au
+    allowed_ips = ['130.56.62.108','130.56.60.96','130.56.62.111'] #ands-prod.anu.edu.au
 
     def render(self):
         #Check our permission to actually get all RIF-CS. This is an expensive
