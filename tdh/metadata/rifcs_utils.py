@@ -397,7 +397,7 @@ Related JCU Research Themes:
         for related_web in context.related_websites:
             related_info = collection.newRelatedInfo()
             related_info.setIdentifier(related_web['site_url'], 'uri')
-            related_info.setNote(related_web['site_note'])
+            related_info.setNotes(related_web['site_note'])
             collection.addRelatedInfo(related_info)
 
 
