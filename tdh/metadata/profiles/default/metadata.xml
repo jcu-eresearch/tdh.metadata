@@ -1,5 +1,5 @@
 <metadata>
-  <version>15</version>
+  <version>16</version>
   <dependencies>
         <dependency>profile-Products.CMFPlacefulWorkflow:CMFPlacefulWorkflow</dependency>
         <dependency>profile-plone.app.dexterity:default</dependency>
