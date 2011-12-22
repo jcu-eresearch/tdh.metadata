@@ -774,6 +774,10 @@ class View(DatasetRecordBaseForm,dexterity.DisplayForm):
         super(View, self).update()
 
     def get_data_location_urls(self, data_locations):
+        """Find any urls in the data_locations section of the dataset 
+        record and returns them as a list
+        """
+
         data_urls = []
         for data_location in data_locations: 
             if data_location['value'].startswith('http:') or data_location['value'].startswith('https:'):
