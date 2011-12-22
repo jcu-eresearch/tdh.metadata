@@ -11,7 +11,8 @@
   <metal:content-core define-macro="content-core"
       tal:define="member context/@@plone_portal_state/member;
                   isReviewer python:member.has_permission('Review portal content', context);
-                  isComplete not:not:context/temporal_coverage_start">
+                  isComplete not:not:context/temporal_coverage_start;
+                  data_urls python:view.get_data_location_urls(here.locations)">
 
   <blockquote class="pullquote" tal:condition="isComplete">
     <a href="@@rifcs" tal:attributes="href string:${here/absolute_url}/@@rifcs?download"
@@ -24,9 +25,12 @@
   <div class="visualClear"></div>
   <!-- Actual data -->
   <div id="dataset-data" class="dataset-section" 
-    tal:condition="here/dataset_data">
+    tal:condition="python:here.dataset_data or data_urls">
       <h3>Data Download</h3>
       <div tal:condition="here/dataset_data" tal:content="structure view/w/dataset_data/render">Data</div>
+      <tal:data_urls tal:condition="data_urls" tal:repeat="data_url data_urls">
+      <a tal:attributes="href data_url"><span tal:replace="python:data_url.split('/')[-1]"></span></a><br />
+      </tal:data_urls>
   </div>
   <!-- Descriptions -->
   <div id="dataset-description-text" class="dataset-section">
