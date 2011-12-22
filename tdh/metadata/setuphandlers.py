@@ -1,4 +1,5 @@
 import decimal
+import logging 
 from zope.component import getUtility
 from plone.registry.interfaces import IRegistry
 from Products.CMFCore.utils import getToolByName
@@ -45,6 +46,12 @@ def upgrade_css(context, logger=None):
     setup.runImportStepFromProfile(PROFILE_ID, 'cssregistry')
     return
 
+def upgrade_workflow(context, logger=None):
+    setup = getToolByName(context, 'portal_setup')
+    setup.runImportStepFromProfile(PROFILE_ID, 'workflow')
+    wf_tool = getToolByName(context, 'portal_workflow')
+    wf_tool.updateRoleMappings()
+
 def upgrade_resources(context, logger=None):
     """Re-import the portal js/css settings.
     """
@@ -84,7 +91,7 @@ def configure_collective_geo(context):
     except:
         logger.info('Could not configure collective.geo (registry likely not \
                      available).')
-        return
+
 
 
 def configure_repository(context):

@@ -46,9 +46,9 @@
   <genericsetup:upgradeStep
       source="15"
       destination="16"
-      title="Reinstall tdh.metadata"
+      title="Reinstall tdh.metadata workflow"
       description="Reinstall tdh.metadata"
-      handler="tdh.metadata.setuphandlers.upgrade_by_reinstall"
+      handler="tdh.metadata.setuphandlers.upgrade_workflow"
       profile="tdh.metadata:default"
       />
 
