@@ -15,6 +15,34 @@ GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
                        'LineString': None, #not currently supported
                       }
 
+CC_LICENCES = {
+    'Creative Commons - Attribution alone (by)' : {
+        'url' : 'http://creativecommons.org/licenses/by/3.0/au/',
+        'title' : 'Creative Commons Attribution 3.0 Australia License'
+    },
+    'Creative Commons - Attribution + NonCommercial (by-nc)' : {
+        'url' : 'http://creativecommons.org/licenses/by-nc/3.0/au/',
+        'title' : 'Creative Commons Attribution-NonCommercial 3.0 Australia License'
+    },
+    'Creative Commons - Attribution + NoDerivatives (by-nd)' : {
+        'url' : 'http://creativecommons.org/licenses/by-nd/3.0/au/',
+        'title' : 'Creative Commons Attribution-NoDerivatives 3.0 Australia License'
+    },
+    'Creative Commons - Attribution + ShareAlike (by-sa)' : {
+        'url' : 'http://creativecommons.org/licenses/by-sa/3.0/au/',
+        'title' : 'Creative Commons Attribution-ShareAlike 3.0 Australia License'
+    },
+    'Creative Commons - Attribution + NonCommercial + NoDerivatives (by-nc-nd)' : {
+        'url' : 'http://creativecommons.org/licenses/by-nc-nd/3.0/au/',
+        'title' : 'Creative Commons Attribution-NonCommercial-NoDerivatives 3.0 Australia License'
+    },
+    'Creative Commons - Attribution + NonCommercial + ShareAlike (by-nc-sa)' : {
+        'url' : 'http://creativecommons.org/licenses/by-nc-sa/3.0/au/',
+        'title' : 'Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Australia License'
+    },
+}
+
+
 def objectOrAttribute(object, attribute):
     """Return either the given object or an objects' attribute, if it exists.
 
@@ -267,10 +295,11 @@ def createCollectionAndRegistry(node, context):
             physical_address = address.newPhysical()
             physical_address.setType('streetAddress')
             for location_part in location['value'].split('\n'):
-                address_part = physical_address.newAddressPart()
-                address_part.setValue(location_part)
-                address_part.setType('addressLine')
-                physical_address.addAddressPart(address_part)
+                if location_part != "":
+                    address_part = physical_address.newAddressPart()
+                    address_part.setValue(location_part)
+                    address_part.setType('addressLine')
+                    physical_address.addAddressPart(address_part)
 
             address.addPhysical(physical_address)
 
@@ -400,6 +429,12 @@ Related JCU Research Themes:
             related_info.setNotes(related_web['site_note'])
             collection.addRelatedInfo(related_info)
 
+    #add a link to the licening text if a CC licence is being used
+    if context.licensing in CC_LICENCES:
+        related_licence = collection.newRelatedInfo()
+        related_licence.setIdentifier(CC_LICENCES[context.licensing]['url'],'uri')
+        related_licence.setNotes(CC_LICENCES[context.licensing]['title'])
+        collection.addRelatedInfo(related_licence)
 
     #Extra metadata about the actual record itself
     collection.setDateAccessioned(\
