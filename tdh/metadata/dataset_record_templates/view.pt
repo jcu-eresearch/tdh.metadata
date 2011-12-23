@@ -148,9 +148,13 @@
       <div tal:condition="here/locations" tal:content="structure view/w/locations/render"></div>
   </div>
   <!-- Access -->
-  <div class="dataset-section">
+  <div class="dataset-section" 
+      tal:define="cc_licence python:here.licensing.startswith('Creative Commons')">
       <h3>Access to collection</h3>
-      <p><b>Licensing</b>: <span tal:replace="here/licensing"></span><br />
+      <p><b>Licensing</b>: 
+      <a tal:omit-tag="not: cc_licence" tal:attributes="href python:view.get_licence_url(here.licensing)" href="#">
+          <span tal:replace="here/licensing"></span>
+          </a><br />
       <b>Legal rights held over data</b>: 
       <span tal:content="here/legal_rights" 
           tal:condition="here/legal_rights">Legal Rights</span>

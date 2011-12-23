@@ -35,6 +35,7 @@ from tdh.metadata import interfaces, rifcs_utils, sources, utils, \
 from tdh.metadata import MessageFactory as _
 from tdh.metadata.browser import anzsrc_codes
 from tdh.metadata.sources import anzsrc_csv
+from tdh.metadata.rifcs_utils import CC_LICENCES
 
 class IParty(Interface):
     relationship = schema.Choice(
@@ -783,6 +784,12 @@ class View(DatasetRecordBaseForm,dexterity.DisplayForm):
             if data_location['value'].startswith('http:') or data_location['value'].startswith('https:'):
                 data_urls.append(data_location['value'])
         return data_urls
+
+    def get_licence_url(self, licence):
+        """Return the url for the relevant CC licence.
+
+        Assumption is that the licence has already been check and is a CC licence"""
+        return CC_LICENCES[licence]['url']
 
 
 class ListFieldConverter(DefaultDexterityTextIndexFieldConverter):
