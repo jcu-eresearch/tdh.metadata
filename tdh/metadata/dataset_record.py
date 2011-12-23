@@ -787,8 +787,10 @@ class View(DatasetRecordBaseForm,dexterity.DisplayForm):
 
     def get_licence_url(self, licence):
         """Return the url for the relevant CC licence.
+        If licence is not a CC licence, an empty string is returned."""
 
-        Assumption is that the licence has already been check and is a CC licence"""
+        if licence not in CC_LICENCES:
+            return ""
         return CC_LICENCES[licence]['url']
 
 
