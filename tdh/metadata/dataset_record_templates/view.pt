@@ -38,16 +38,14 @@
       <div tal:condition="here/descriptions" tal:content="structure view/w/descriptions/render"></div>
       <p> This collection contains: 
           <tal:dataType tal:repeat="data_type here/data_type">
-          <span tal:replace="data_type"></span>
-          <span tal:condition="not:repeat/data_type/end">, </span>
-          <span tal:condition="repeat/data_type/end">. </span>
+          <span tal:replace="data_type"></span><span tal:condition="not:repeat/data_type/end">, </span><span tal:condition="repeat/data_type/end">. </span>
           </tal:dataType>
   </div>
   <div id="dataset-logo" >
   </div>
 
   <!-- Coverage -->
-  <div class="dataset-section">
+  <div class="dataset-section" id="coverage">
       <h3>Coverage</h3>
       <tal:temporal-coverage tal:condition="context/temporal_coverage_start">
       <h4>Temporal Coverage</h4>
@@ -71,7 +69,7 @@
   </div>
 
   <!-- Keywords -->
-  <div class="dataset-section">
+  <div class="dataset-section" id="keywords">
       <h3>Keywords</h3>
       <div class="dataset-section-content">
           <p> <b>JCU Research Theme:</b> 
@@ -95,7 +93,7 @@
   </div>
 
   <!-- Associations -->
-  <div class="dataset-section">
+  <div class="dataset-section" id="associations">
       <h3>Associations</h3>
       <b>Parties</b>:
       <div class="indent-20" 
@@ -110,8 +108,7 @@
           <b>Contributors</b>: 
           <p class="indent-20">
           <tal:coinvestigators tal:repeat="person here/coinvestigators">
-          <span tal:replace="python: person.get('other','')"></span>
-          <span tal:condition="not:repeat/person/end">, </span>
+          <span tal:replace="python: person.get('other','')"></span><br tal:condition="not:repeat/person/end" />
           </tal:coinvestigators>
           </p>
       </div>
@@ -143,12 +140,12 @@
   </div>
 
   <!-- Location -->
-  <div class="dataset-section" tal:condition="here/locations">
+  <div id="location" class="dataset-section" tal:condition="here/locations">
       <h3>Location</h3>
       <div tal:condition="here/locations" tal:content="structure view/w/locations/render"></div>
   </div>
   <!-- Access -->
-  <div class="dataset-section" 
+  <div id="access" class="dataset-section" 
       tal:define="cc_licence python:here.licensing.startswith('Creative Commons')">
       <h3>Access to collection</h3>
       <p><b>Licensing</b>: 
@@ -163,7 +160,7 @@
   </div>
 
   <!-- About the data -->
-  <div class="dataset-section">
+  <div id="about-data" class="dataset-section">
       <h3>About the data</h3>
       <p><b>Suggested retention period:</b> 
       <span tal:replace="here/retention_period" 

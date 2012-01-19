@@ -77,25 +77,36 @@ input#form-widgets-related_activities-widgets-query {
 }
 
 
-.dataset-section td.datagridwidget-cell span.choice-field {
+body.template-view div#dataset-description-text td.datagridwidget-cell span.choice-field {
     font-weight: bold;
 }
-#dataset-description-text td.datagridwidget-cell span.choice-field:after {
+
+body.template-view div#dataset-description-text td.datagridwidget-cell span.choice-field:after {
     content: ": "
 }
-.dataset-section td.datagridwidget-cell { 
+
+body.template-view div.dataset-section td.datagridwidget-cell { 
     vertical-align: top; 
     padding-right: 1em; 
     padding-bottom: 1em;
 }
 
-tr.datagridwidget-row > td:first-child {
+body.template-view table.datagridwidget-table-view {
+    width: auto;
+}
+
+/*
+body.template-view tr.datagridwidget-row > td:first-child {
     width: 20%;
 }
 
+div#keywords table.datagridwidget-table-view {
+    width: auto;
+}
 div#keywords tr.datagridwidget-row > td:first-child {
     width: auto;
 }
+*/
 
 .indent-20 {
     padding-left: 20px;
