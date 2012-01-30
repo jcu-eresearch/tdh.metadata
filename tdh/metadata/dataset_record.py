@@ -713,6 +713,11 @@ class DatasetRecordBaseForm(object):
         if 'code' in subform.fields:
             subform.fields['code'].widgetFactory = AutocompleteFieldWidget
 
+        if 'value' in subform.fields: 
+            if subform.fields['value'].interface.getName() in ['IDatasetDescription', 'IDatasetLocation']:
+                subform.fields['value'].widgetFactory = widgets.PreserveNewLinesFieldWidget 
+           
+
     def datagridUpdateWidgets(self, subform, widgets, widget):
         if widget.name == 'form.widgets.related_parties':
             widgets['user_uid'].autoFill = False

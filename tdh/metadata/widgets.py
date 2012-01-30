@@ -7,6 +7,7 @@ from z3c.form import action, button, interfaces
 from z3c.form.widget import FieldWidget
 from z3c.form.browser.button import ButtonWidget
 from z3c.form.browser.select import SelectWidget
+from z3c.form.browser.textarea import TextAreaWidget
 
 from plone.app.z3cform.templates import RenderWidget
 from plone.formwidget.autocomplete.widget import \
@@ -117,3 +118,16 @@ class PersonAutocompleteSelectionWidget(AutocompleteSelectionWidget):
 def PersonAutocompleteFieldWidget(field, request):
     return FieldWidget(field, PersonAutocompleteSelectionWidget(request))
 
+
+class PreserveNewLinesWidget(TextAreaWidget):
+    """Preserves new lines when rendering text
+    """
+    display_template = ViewPageTemplateFile('widget_templates/textarea_with_newlines_display.pt')
+
+    def displayValue(self):
+        return self.value.replace('\n','\n<br class="preserve_nl">')
+
+
+@zope.interface.implementer(interfaces.IFieldWidget)
+def PreserveNewLinesFieldWidget(field, request):
+    return FieldWidget(field, PreserveNewLinesWidget(request))
