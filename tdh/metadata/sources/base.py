@@ -8,8 +8,6 @@ from z3c.sqlalchemy import getSAWrapper
 from z3c.formwidget.query.interfaces import IQuerySource
 
 from plone.memoize import ram
-import ipdb
-
 
 class BaseQuerySource(object):
 
@@ -83,11 +81,10 @@ class BaseQuerySource(object):
         For getting access to the actual results of the query or the
         query before execution, see the prepareQuery method below.
         """
-        if isinstance(query_string, str):
+        if isinstance(query_string, basestring):
             query_string = query_string.lower()
 
         query = self.prepareQuery(query_string, fields, exact)
-        print query
 
         for result in query[:self.query_limit]:
             yield self.formatResult(result)
@@ -114,7 +111,6 @@ class BaseQuerySource(object):
 
         #Prepare query against our set of search criteria. These are flexible
         #and can be redefined by any child classes.
-        print self.queryCriteria(query_string,fields, exact)
         return query.filter(self.queryCriteria(query_string, fields, exact))
 
     def queryCriteria(self, query_string, fields, exact=False):
@@ -136,7 +132,6 @@ class BaseQuerySource(object):
         #Define a comparison function to be applied to our field. If our
         #query is a string, we go case-insensitive. We might like to add more
         #types of comparison here later (dates, floats...?)
-        #Note: using basestring so that types of str and unicode are caught
         comparison_func = lambda field: field
         if isinstance(query_string, basestring):
             comparison_func = func.lower

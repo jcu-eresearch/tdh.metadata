@@ -5,7 +5,6 @@ from z3c.sqlalchemy.mapper import MappedClassBase
 
 from tdh.metadata import config, utils
 from tdh.metadata.sources.base import BaseQuerySource
-import ipdb
 
 TABLE_DB_CONNECTION = config.DB_CONNECTIONS['research-services']
 TABLE_NAME = 'GRANTS_PUBLIC'
