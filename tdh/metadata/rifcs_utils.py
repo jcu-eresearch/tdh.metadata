@@ -3,9 +3,6 @@ import jpype
 import types
 from tdh.metadata import config, sources, utils
 
-import ipdb
-
-
 GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
                                    'format': lambda coords: \
                                       ' '.join(['%s,%s' % x for x in coords[0]])
