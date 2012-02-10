@@ -3,6 +3,8 @@ import jpype
 import types
 from tdh.metadata import config, sources, utils
 
+import ipdb
+
 
 GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
                                    'format': lambda coords: \
@@ -197,7 +199,7 @@ def createActivityAndRegistry(node, id, activity_record):
     """Create and return a new RIF-CS RegistryObject with a contained Activity.
 
     `id` should be a relevant UUID for submission to ANDS
-    `user_record` should be a Activity object (result from Research Grants)
+    `activity_record` should be a Activity object (result from Research Grants)
     """
     rifcs_activity_registry = createRegistryObject(node, id)
     rifcs_activity = rifcs_activity_registry.newActivity()
@@ -208,12 +210,20 @@ def createActivityAndRegistry(node, id, activity_record):
                                          activity_record.app_id)
     rifcs_activity.addIdentifier(rifcs_activity_id)
 
+    # only some activities will have a PURL
+    if activity_record.p_url is not None: 
+        rifcs_activity_purl = createIdentifier(rifcs_activity,
+                                               'purl',
+                                               activity_record.p_url)
+        rifcs_activity.addIdentifier(rifcs_activity_purl)
+
     rifcs_activity_names = [
         {'type': 'primary',
          'value': activity_record.title},
         {'type': 'abbreviated',
          'value': activity_record.short_title},
     ]
+    addNamesToObject(rifcs_activity, rifcs_activity_names)
 
     rifcs_activity_record_note = \
             config.RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE % \
