@@ -27,7 +27,8 @@ RIFCS_GROUP = "James Cook University"
 RIFCS_ORIGINATING_SOURCE = "http://www.jcu.edu.au/tdh/"
 
 RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE = """
-Start Year: %(start_year)s
+Start Date: %(start_date)s
+End Date: %(end_date)s
 Grant Year: %(grant_year)s
 Funding Type: %(type)s
 Funding Scheme: %(scheme)s

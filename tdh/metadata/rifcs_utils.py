@@ -234,14 +234,6 @@ def createActivityAndRegistry(node, id, activity_record):
     ]
     addDescriptionsToObject(rifcs_activity, activity_descriptions)
 
-    rifcs_activity_coverage = rifcs_activity.newCoverage()
-    addDateTimeToCoverage(coverage=rifcs_activity_coverage,
-                          datetime_instance=\
-                           datetime.strptime(activity_record.start_year, '%Y'),
-                          type="dateFrom"
-                         )
-    rifcs_activity.addCoverage(rifcs_activity_coverage)
-
     #Create our flexible keyword sources. It doesn't matter
     #here if any of our values are empty because we'll check
     #them.
