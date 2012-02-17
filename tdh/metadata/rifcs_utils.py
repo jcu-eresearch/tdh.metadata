@@ -222,6 +222,11 @@ def createActivityAndRegistry(node, id, activity_record):
     ]
     addNamesToObject(rifcs_activity, rifcs_activity_names)
 
+    if activity_record.start_date is None:
+        activity_record.start_date = ''
+    if activity_record.end_date is None:
+        activity_record.end_date = ''
+
     rifcs_activity_record_note = \
             config.RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE % \
             activity_record.__dict__
