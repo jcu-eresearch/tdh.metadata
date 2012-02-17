@@ -234,7 +234,8 @@ class IDatasetRecord(form.Schema):
 
     temporal_coverage_end = schema.Date(
       title=_(u"Research End Date"),
-      description=_(u"Enter the date you finished or will finish the research. Leave blank is research is ongoing."),
+      description=_(u"Enter the date you finished or will finish the \
+                    research. Leave blank is research is ongoing."),
       required=False,
     )
 
@@ -249,7 +250,8 @@ class IDatasetRecord(form.Schema):
 
     spatial_coverage_text = schema.Text(
       title=_(u"Spatial Coverage (Textual Description)"),
-      description=_(u"Enter a text-based description of the location this research pertains to."),
+      description=_(u"Enter a text-based description of the location this \
+                    research pertains to."),
       required=False,
     )
 
@@ -335,7 +337,9 @@ class IDatasetRecord(form.Schema):
     form.widget(coinvestigators=DataGridFieldFactory)
     coinvestigators = schema.List(
         title=_(u"Co-investigators and other contributors"),
-        description=_(u"Enter details about other entities that you have collaborated with. Use this field only for non-JCU persons."),
+        description=_(u"Enter details about other entities that you have \
+                      collaborated with. Use this field only for non-JCU \
+                      persons."),
         value_type=DictRow(
             title=_(u"Contributor"),
             schema=ICoinvestigator,
@@ -346,26 +350,29 @@ class IDatasetRecord(form.Schema):
 
     form.widget(related_publications=DataGridFieldFactory)
     related_publications = schema.List(
-	title=_(u"Related Publications"),
-	description=_(u"Enter details about publications that relate to this dataset. You can enter a DOI and/or a URL"),
-	value_type=DictRow(
+        title=_(u"Related Publications"),
+        description=_(u"Enter details about publications that relate to this \
+                      dataset. You can enter a DOI and/or a URL"),
+        value_type=DictRow(
             title=_(u"Publication"),
-	    schema=IPublication,
-	),
-	required=False,
-	default=[],
+            schema=IPublication,
+        ),
+        required=False,
+        default=[],
     )
 
     form.widget(related_websites=DataGridFieldFactory)
     related_websites = schema.List(
-	title=_(u"Related Websites"),
-	description=_(u"Enter details about websites that relate to this dataset. You can enter a URL and a note stating the connection."),
-	value_type=DictRow(
+        title=_(u"Related Websites"),
+        description=_(u"Enter details about websites that relate to this \
+                      dataset. You can enter a URL and a note stating the \
+                      connection."),
+        value_type=DictRow(
             title=_(u"Website"),
-	    schema=IWebsite,
-	),
-	required=False,
-	default=[],
+            schema=IWebsite,
+        ),
+        required=False,
+        default=[],
     )
 
     #Keywords fieldset
@@ -442,7 +449,8 @@ class IDatasetRecord(form.Schema):
 
     retention_period = schema.Choice(
       title=_(u"Suggested Retention Period"),
-      description=_(u"Select the minimum amount of time your data is to be retained"),
+      description=_(u"Select the minimum amount of time your data is \
+                    to be retained"),
       required=False,
       values = [
         "12 months (minor project)",
@@ -499,7 +507,8 @@ class IDatasetRecord(form.Schema):
 
     nationally_significant = schema.Bool(
       title=_(u"Is your data set Nationally Significant?"),
-      description=_(u"If you know or believe your dataset may be Nationally Significant, select this option."),
+      description=_(u"If you know or believe your dataset may be \
+                    Nationally Significant, select this option."),
       required = False,
     )
 
@@ -512,7 +521,8 @@ def validateResearchThemes(value):
     """Ensure there are at least 1 theme or 'not aligned' selected in checkbox
     """
     if len(value) == 0:
-        raise Invalid(_(u"You must select one or more themes or select 'not aligned'"))
+        raise Invalid(_(u"You must select one or more themes or \
+                        select 'not aligned'"))
 
 
 @form.validator(field=IDatasetRecord['for_codes'])
@@ -621,12 +631,13 @@ grok.global_adapter(accessRestrictionsIndexer, name="access_restrictions")
 @indexer(IDatasetRecord)
 def temporalCoverageStartIndexer(obj):
     return DateTime(obj.temporal_coverage_start.isoformat())
-grok.global_adapter(temporalCoverageStartIndexer, name="temporal_coverage_start")
+grok.global_adapter(temporalCoverageStartIndexer,
+                    name="temporal_coverage_start")
 
 @indexer(IDatasetRecord)
 def temporalCoverageEndIndexer(obj):
     if obj.temporal_coverage_end is None:
-	return DateTime('2999-12-31')
+        return DateTime('2999-12-31')
     return DateTime(obj.temporal_coverage_end.isoformat())
 grok.global_adapter(temporalCoverageEndIndexer, name="temporal_coverage_end")
 
@@ -707,16 +718,19 @@ class DatasetRecordBaseForm(object):
 
     def datagridInitialise(self, subform, widget):
         if 'user_uid' in subform.fields:
-            subform.fields['user_uid'].widgetFactory = widgets.PersonAutocompleteFieldWidget
+            subform.fields['user_uid'].widgetFactory = \
+                    widgets.PersonAutocompleteFieldWidget
 
-	#If want to disable autocomplete for FoR and SEO codes, delete if sentences below
+        #If want to disable autocomplete for FoR and SEO codes, delete
+        #if sentences below
         if 'code' in subform.fields:
             subform.fields['code'].widgetFactory = AutocompleteFieldWidget
 
-        if 'value' in subform.fields: 
-            if subform.fields['value'].interface.getName() in ['IDatasetDescription', 'IDatasetLocation']:
-                subform.fields['value'].widgetFactory = widgets.PreserveNewLinesFieldWidget 
-           
+        if 'value' in subform.fields:
+            if subform.fields['value'].interface.getName() in \
+               ['IDatasetDescription', 'IDatasetLocation']:
+                subform.fields['value'].widgetFactory = \
+                        widgets.PreserveNewLinesFieldWidget
 
     def datagridUpdateWidgets(self, subform, widgets, widget):
         if widget.name == 'form.widgets.related_parties':
@@ -780,13 +794,14 @@ class View(DatasetRecordBaseForm,dexterity.DisplayForm):
         super(View, self).update()
 
     def get_data_location_urls(self, data_locations):
-        """Find any urls in the data_locations section of the dataset 
+        """Find any urls in the data_locations section of the dataset
         record and returns them as a list
         """
 
         data_urls = []
-        for data_location in data_locations: 
-            if data_location['value'].startswith('http:') or data_location['value'].startswith('https:'):
+        for data_location in data_locations:
+            if data_location['value'].startswith('http:') or \
+               data_location['value'].startswith('https:'):
                 data_urls.append(data_location['value'])
         return data_urls
 
