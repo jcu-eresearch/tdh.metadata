@@ -4,6 +4,9 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Added ability for Jenkins to run unit tests.  Lots of tests are required,
+  however.
+  [davidjb]
 - Allow WebDAV uploads into the repository folder types.  File uploads into 
   these areas will see their files wrapped inside a data record, ready for
   metadata to be added.  Various changes made to handle records that are 
