@@ -1,0 +1,3 @@
+[submodule "plone-buildout"]
+	path = plone-buildout
+	url = git@github.com:jcu-eresearch/plone-buildout.git
