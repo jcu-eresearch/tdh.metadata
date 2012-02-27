@@ -22,4 +22,4 @@ dist
 *.tmp*
 include/
 lib/
-.coverage
+.coverage*
