@@ -88,7 +88,8 @@ Check For Code.
 
 Check for Research Themes
 
-    >>> "You must select one or more themes or select 'not aligned'" in browser.contents
+    >>> import pdb; pdb.set_trace()
+    >>> '<div class="error">You must select one or more themes' in browser.contents
     True
 
 Try to add an right form. First, fill the add dataset record form.
