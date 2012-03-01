@@ -88,7 +88,6 @@ Check For Code.
 
 Check for Research Themes
 
-    >>> import pdb; pdb.set_trace()
     >>> '<div class="error">You must select one or more themes' in browser.contents
     True
 
