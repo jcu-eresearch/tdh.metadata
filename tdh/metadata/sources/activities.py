@@ -10,6 +10,9 @@ TABLE_DB_CONNECTION = config.DB_CONNECTIONS['research-services']
 TABLE_NAME = 'GRANTS_PUBLIC'
 TABLE_NAME_ABSOLUTE = '%s.%s' % (TABLE_DB_CONNECTION['db-schema'], TABLE_NAME)
 
+RESEARCHER_TABLE_NAME = 'RESEARCHERS_RKV'
+RESEARCHER_TABLE_NAME_ABSOLUTE = '%s.%s' % (TABLE_DB_CONNECTION['db-schema'], RESEARCHER_TABLE_NAME)
+
 class Activity(MappedClassBase):
     pass
 
@@ -42,3 +45,17 @@ def ActivitiesQuerySourceFactory():
         query_fields=['short_title', 'app_id', 'pi'],
         query_limit=50,
     )
+
+class ActivityParty(MappedClassBase):
+    pass
+
+utils.createAndRegisterSAMapper(
+    db_connector=TABLE_DB_CONNECTION['db-connector-id'],
+    table_name=RESEARCHER_TABLE_NAME,
+    db_schema=TABLE_DB_CONNECTION['db-schema'],
+    table_name_absolute=RESEARCHER_TABLE_NAME_ABSOLUTE,
+    mapper_class=ActivityParty,
+    column_overrides=[Column('app_id', Integer)],
+    primary_keys=['app_id', 'login_id']
+)
+

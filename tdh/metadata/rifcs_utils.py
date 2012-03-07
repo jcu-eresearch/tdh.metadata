@@ -1,7 +1,15 @@
 from datetime import datetime
 import jpype
 import types
-from tdh.metadata import config, sources, utils
+from tdh.metadata import config, sources, utils 
+from tdh.metadata.models import getResearchers
+import logging
+
+#Plone logger
+logger = logging.getLogger("Plone")
+
+#variable to hold related_party uids that are discovered when making activities
+all_activity_parties = set([])
 
 GEOMETRY_CONVERTERS = {'Polygon': {'output_type': 'kmlPolyCoords',
                                    'format': lambda coords: \
@@ -40,7 +48,6 @@ CC_LICENCES = {
         'title' : 'Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Australia License'
     },
 }
-
 
 def objectOrAttribute(object, attribute):
     """Return either the given object or an objects' attribute, if it exists.
@@ -93,30 +100,34 @@ def createRIFCSRegistries(node, attribute, items):
             registries.append(registry)
     return registries
 
-def createAndAddRelatedObjects(collection, relations, related_attribute,
+def createAndAddRelatedObjects(parent_object, relations, related_attribute,
                                relationship):
-    """Query, create, and add RelatedObjects to a collection based upon a list.
+    """Query, create, and add RelatedObjects to a parent record based upon a list.
     """
     options = RIF_CS_OPTIONS[related_attribute]
     for relation in relations:
         record = querySource(relation, **options['query_source_options'])
+        if record is None:
+            logger.info("No records returned for %s query with input %s",
+                        related_attribute, relation)
+            return
         if record:
             #Create the RelatedObject and specify the relationship as either
             #an attribute of the result, or just the passed in string if the
             #attribute doesn't exist.
             if type(relation) is types.DictType:
                 related_object = createRelatedObject(
-                    node=collection,
+                    node=parent_object,
                     key=record[1],
                     relationship=relation.get(relationship,relationship)
                 )
             else:
                 related_object = createRelatedObject(
-                    node=collection,
+                    node=parent_object,
                     key=record[1],
                     relationship=getattr(record[0],relationship,relationship)
                 )
-        collection.addRelatedObject(related_object)
+        parent_object.addRelatedObject(related_object)
 
 def createRegistryObject(node, key):
     """Create and return a new RIF-CS RegistryObject against the given node.
@@ -195,9 +206,12 @@ def createPartyAndRegistry(node, id, user_record):
 def createActivityAndRegistry(node, id, activity_record):
     """Create and return a new RIF-CS RegistryObject with a contained Activity.
 
-    `id` should be a relevant UUID for submission to ANDS
+    `id` should be a relevant APP_ID for submission to ANDS
     `activity_record` should be a Activity object (result from Research Grants)
     """
+
+    global all_activity_parties
+
     rifcs_activity_registry = createRegistryObject(node, id)
     rifcs_activity = rifcs_activity_registry.newActivity()
     rifcs_activity.setType('project')
@@ -231,12 +245,19 @@ def createActivityAndRegistry(node, id, activity_record):
             config.RIFCS_ACTIVITY_RECORD_NOTE_TEMPLATE % \
             activity_record.__dict__
 
-    activity_descriptions = [
-        {'type': 'brief',
-         'value': activity_record.summary},
-        {'type': 'note',
-         'value': rifcs_activity_record_note}
-    ]
+    if activity_record.summary is None:
+        activity_descriptions = [
+            {'type': 'brief',
+             'value': rifcs_activity_record_note}
+        ]
+    else:
+        activity_descriptions = [
+            {'type': 'brief',
+            'value': activity_record.summary},
+            {'type': 'note',
+            'value': rifcs_activity_record_note}
+        ]
+
     addDescriptionsToObject(rifcs_activity, activity_descriptions)
 
     #Create our flexible keyword sources. It doesn't matter
@@ -257,6 +278,18 @@ def createActivityAndRegistry(node, id, activity_record):
             rifcs_activity_keywords.append(value)
 
     addSubjectsToObject(rifcs_activity, rifcs_activity_keywords)
+
+    #discover all researchers involved in the activity
+    activity_parties = getResearchers(activity_record.app_id)
+
+    #relatedObject - related parties
+    createAndAddRelatedObjects(rifcs_activity,
+                               activity_parties, 
+                               'related_parties',
+                               'hasParticipant')
+    
+    # add the activity parties to the set of all activity parties for this rendering
+    all_activity_parties |= set(activity_parties)
 
     rifcs_activity_registry.addActivity(rifcs_activity)
     return rifcs_activity_registry
@@ -522,6 +555,9 @@ def renderRifcs(dataset_records, render_collection=True,
     we can take advantage of the ANDS RIF-CS library.
     See http://services.ands.org.au/documentation/rifcs/1.2.0/schema/vocabularies.html#Identifier_Type for info.
     """
+
+    global all_activity_parties
+
     #We might get a straight object coming in, so wrap it
     if not isinstance(dataset_records, list):
         dataset_records = [dataset_records,]
@@ -533,7 +569,7 @@ def renderRifcs(dataset_records, render_collection=True,
     #Provision a dict for unique related attributes
     related_attributes = dict((attr, set()) for attr in \
                               render_related_attributes)
-
+    #CPMEB - DEBUG
     #Marshall all of our relevant objects into our RIF-CS
     for context in dataset_records:
         if render_collection:
@@ -556,12 +592,23 @@ def renderRifcs(dataset_records, render_collection=True,
                                   related_values]
             related_attributes[attribute] |= set(related_values)
 
-    for attribute in related_attributes:
-        rifcs_registries = createRIFCSRegistries(rifcs,
-                                                 attribute,
-                                                 related_attributes[attribute])
-        for registry in rifcs_registries:
-            rifcs.addRegistryObject(registry)
+
+    # must create related_activities first in order to collect additional parties
+    rifcs_registries = createRIFCSRegistries(rifcs, 
+                                             'related_activities', 
+                                             related_attributes['related_activities'])
+
+    related_attributes['related_parties'] |= all_activity_parties
+
+    for registry in rifcs_registries:
+        rifcs.addRegistryObject(registry)
+
+    rifcs_registries = createRIFCSRegistries(rifcs, 
+                                             'related_parties',
+                                             related_attributes['related_parties'])
+
+    for registry in rifcs_registries:
+        rifcs.addRegistryObject(registry)
 
     #Validate if we would like to check this.  Prepare for Java tracebacks
     #if an error occurs in validation. This frequently happens on account of
@@ -592,6 +639,7 @@ RIF_CS_OPTIONS = \
                                    'query_fields': ['app_id'],
                                    'key_type': 'activity',
                                    'key_field': 'app_id'},
-          'create_func': createActivityAndRegistry},
+          'create_func': createActivityAndRegistry,
+         },
         }
 
