@@ -59,6 +59,8 @@ Code, specify a special egg section like so and include the reference to the
 download in your ``instance`` section::
 
 	[buildout]
+	extends =
+	    https://raw.github.com/gist/3057156/aedf4fc2e177c33540b201063e2c06c5135a1e79/jpype.cfg
 	parts +=
 		...
 		tdh-metadata
@@ -67,9 +69,10 @@ download in your ``instance`` section::
 	...
 	eggs +=
 		${tdh-metadata:eggs}
+
 	[tdh-metadata]
 	recipe = zc.recipe.egg
-	eggs = JPype
+	eggs = tdh.metadata
 	find-links =
 		http://xyz.com/tdh.metadata-src-1.0.tar.gz
 
@@ -89,6 +92,7 @@ and where ANDS' RIF-CS can be found::
 			research-services__db-password XYZ
 			rifcs-api-location ${rifcs-api:destination}/${rifcs-api:filename}
 		</product-config>
+
 	[rifcs-api]
 	recipe = hexagonit.recipe.download
 	url = http://services.ands.org.au/documentation/rifcs/java-api-1.2/rifcs-api.jar
