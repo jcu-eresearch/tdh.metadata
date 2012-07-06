@@ -60,7 +60,7 @@ download in your ``instance`` section::
 
 	[buildout]
 	extends =
-	    https://raw.github.com/gist/3057156/aedf4fc2e177c33540b201063e2c06c5135a1e79/jpype.cfg
+	    https://raw.github.com/gist/3057156/
 	parts +=
 		...
 		tdh-metadata
