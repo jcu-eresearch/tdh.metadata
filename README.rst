@@ -50,6 +50,17 @@ Requirements
 Developer and Technical Information
 =================================== 
 
+Checking out the code
+---------------------
+
+This code utilises Git submodules so if you are cloning this project from
+GitHub, then you will need to run::
+
+    git submodule init
+    git submodule update
+
+after cloning in order to have all relevant files needed.
+
 Installation
 ------------
 
@@ -304,5 +315,3 @@ integration of this package into a new installation, refer to the same address.
 The source code for this package is available on GitHub at
 https://github.com/jcu-eresearch/tdh.metadata, where developers are invited
 to contribute. 
-
-
