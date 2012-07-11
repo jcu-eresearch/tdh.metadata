@@ -50,6 +50,17 @@ Requirements
 Developer and Technical Information
 =================================== 
 
+Checking out the code
+---------------------
+
+This code utilises Git submodules so if you are cloning this project from
+GitHub, then you will need to run::
+
+    git submodule init
+    git submodule update
+
+after cloning in order to have all relevant files needed.
+
 Installation
 ------------
 
@@ -59,6 +70,8 @@ Code, specify a special egg section like so and include the reference to the
 download in your ``instance`` section::
 
 	[buildout]
+	extends =
+	    https://raw.github.com/gist/3057156/
 	parts +=
 		...
 		tdh-metadata
@@ -67,9 +80,10 @@ download in your ``instance`` section::
 	...
 	eggs +=
 		${tdh-metadata:eggs}
+
 	[tdh-metadata]
 	recipe = zc.recipe.egg
-	eggs = JPype
+	eggs = tdh.metadata
 	find-links =
 		http://xyz.com/tdh.metadata-src-1.0.tar.gz
 
@@ -89,6 +103,7 @@ and where ANDS' RIF-CS can be found::
 			research-services__db-password XYZ
 			rifcs-api-location ${rifcs-api:destination}/${rifcs-api:filename}
 		</product-config>
+
 	[rifcs-api]
 	recipe = hexagonit.recipe.download
 	url = http://services.ands.org.au/documentation/rifcs/java-api-1.2/rifcs-api.jar
@@ -300,5 +315,3 @@ integration of this package into a new installation, refer to the same address.
 The source code for this package is available on GitHub at
 https://github.com/jcu-eresearch/tdh.metadata, where developers are invited
 to contribute. 
-
-
