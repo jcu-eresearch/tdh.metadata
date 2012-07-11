@@ -6,7 +6,7 @@ from tdh.metadata.models import getResearchers
 import logging
 
 #Plone logger
-logger = logging.getLogger("Plone")
+logger = logging.getLogger("tdh.metadata")
 
 #variable to hold related_party uids that are discovered when making activities
 all_activity_parties = set([])
@@ -378,7 +378,7 @@ def createCollectionAndRegistry(node, context):
         {'type': 'anzsrc-seo',
          'value': context.seo_codes},
         {'type': 'local',
-         'value': context.keywords},
+         'value': context.keywords or ()},
     ]
     addSubjectsToObject(collection, keyword_types)
 
@@ -527,6 +527,7 @@ def addSubjectsToObject(node, values):
 
     The format should be like this [{'type': 'local', 'value': 'Foobar'}].
     """
+    logger.info('Marshalling subjects %r' % values)
     for subject_wrapper in values:
         type = subject_wrapper['type']
         subjects = subject_wrapper['value']
@@ -572,6 +573,7 @@ def renderRifcs(dataset_records, render_collection=True,
     #CPMEB - DEBUG
     #Marshall all of our relevant objects into our RIF-CS
     for context in dataset_records:
+        logger.info('Marshalling objects for %r' % context)
         if render_collection:
             #Render our collection to our RIF-CS object
             collection_registry = createCollectionAndRegistry(rifcs, context)

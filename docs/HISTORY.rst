@@ -4,6 +4,8 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Fix issue with rendering RIF-CS with empty keywords.
+  [davidjb]
 - Added ability for Jenkins to run unit tests.  Lots of tests are required,
   however.
   [davidjb]
