@@ -81,7 +81,7 @@ class BaseQuerySource(object):
         For getting access to the actual results of the query or the
         query before execution, see the prepareQuery method below.
         """
-        if isinstance(query_string, basestring):
+        if not exact and isinstance(query_string, basestring):
             query_string = query_string.lower()
 
         query = self.prepareQuery(query_string, fields, exact)
@@ -133,7 +133,7 @@ class BaseQuerySource(object):
         #query is a string, we go case-insensitive. We might like to add more
         #types of comparison here later (dates, floats...?)
         comparison_func = lambda field: field
-        if isinstance(query_string, basestring):
+        if not exact and isinstance(query_string, basestring):
             comparison_func = func.lower
 
         if exact:

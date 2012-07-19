@@ -4,6 +4,9 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Fix issue with the same term being returned by Keywords source.
+  We were querying in an imprecise fashion (case insenstive).
+  [davidjb]
 - Fix issue with rendering RIF-CS with empty keywords.
   [davidjb]
 - Added ability for Jenkins to run unit tests.  Lots of tests are required,
