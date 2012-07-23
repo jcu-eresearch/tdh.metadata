@@ -138,23 +138,6 @@ class DataRecordRepositorySearchView(grok.View):
 class DataRecordRepositoryRifcsView(RifcsView):
     grok.context(IDataRecordRepository)
 
-    allowed_ips = ['130.56.62.108','130.56.60.96','130.56.62.111'] #ands-prod.anu.edu.au
-
-    def render(self):
-        #Check our permission to actually get all RIF-CS. This is an expensive
-        #operation and we need to make sure only Managers/ANDS can execute it.
-        #NOTE: these headers can be faked so we drop them at our webserver.
-        client_ip = \
-                self.request.get('HTTP_X_FORWARDED_FOR', '') or \
-                self.request.get('HTTP_X_REAL_IP', '')
-
-        if not checkPermission('cmf.ManagePortal', self.context) and \
-           client_ip not in self.allowed_ips:
-            raise Unauthorized(
-                'Client at %s not allowed to retrieve all RIF-CS' % client_ip)
-
-        return super(DataRecordRepositoryRifcsView, self).render()
-
     def getRenderables(self):
         """Overriden from RifcsView.
         """

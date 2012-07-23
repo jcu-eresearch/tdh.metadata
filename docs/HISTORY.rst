@@ -4,6 +4,9 @@ Changelog
 1.1 (unreleased)
 ----------------
 
+- Remove restriction on RIF-CS render and move restriction to web server
+  for IP-only restriction.
+  [davidjb]
 - Fix issue with the same term being returned by Keywords source.
   We were querying in an imprecise fashion (case insenstive).
   [davidjb]
