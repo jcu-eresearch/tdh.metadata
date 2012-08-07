@@ -29,7 +29,7 @@
       <h3>Data Download</h3>
       <div tal:condition="here/dataset_data" tal:content="structure view/w/dataset_data/render">Data</div>
       <tal:data_urls tal:condition="data_urls" tal:repeat="data_url data_urls">
-      <a tal:attributes="href data_url"><span tal:replace="python:data_url.split('/')[-1]"></span></a><br />
+      <a tal:attributes="href data_url"><span tal:replace="data_url"></span></a><br />
       </tal:data_urls>
   </div>
   <!-- Descriptions -->
@@ -72,7 +72,7 @@
   <div class="dataset-section" id="keywords">
       <h3>Keywords</h3>
       <div class="dataset-section-content">
-          <p> <b>JCU Research Theme:</b> 
+          <p> <b>Research Theme:</b> 
           <tal:jcurt tal:repeat="theme here/research_themes">
           <span tal:replace="theme"></span>
           <span tal:condition="not:repeat/theme/end">, </span>
