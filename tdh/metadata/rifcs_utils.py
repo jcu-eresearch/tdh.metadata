@@ -393,8 +393,8 @@ Related JCU Research Themes:
               )
 
     #access description
-    open_access = u"If the data is not available via the provided link, please contact \
-            an associated party (preferrably the Manger is specified) for access."
+    open_access = u". If the data is not available via the provided link, please contact \
+            an associated party (preferrably the Manager as specified) for access."
     if context.access_restrictions == u"Open Access":
         access_rights = '%s\n%s' % (context.access_restrictions, open_access)
     else:
